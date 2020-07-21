@@ -1,0 +1,132 @@
+[
+    {
+        "location": "C:\\Program Files\\Side Effects Software\\Houdini {ver}"
+    },
+    {
+        "version": "18.0.391"
+    },
+    {
+        "RESX": "2048"
+    },
+    {
+        "RESY": "1152"
+    },
+    {
+        "FPS": "24"
+    },
+    {
+        "EDITOR": "C:\\Program Files (x86)\\Sublime Text 3\\sublime_text.exe"
+    },
+    {
+        "HOUDINI_MAX_BACKUP_FILES": "3"
+    },
+    {
+        "HOUDINI_DSO_ERROR": "2"
+    },
+    {
+        "CGHOME": "D:\\pipeline"
+    },
+    {
+        "SIDEFXLABS": "%CGHOME%\\houdini\\otls\\SideFXLabs-Development"
+    },
+    {
+        "path_envs": [
+            {
+                "HOUDINI_PATH": "%CGHOME%\\houdini"
+            },
+            {
+                "HOUDINI_MENU_PATH": "%CGHOME%\\houdini\\customMenu"
+            },
+            {
+                "cgru": [
+                    {
+                        "CGRU": "%CGHOME%\\cgru.2.3.1"
+                    },
+                    {
+                        "HOUDINI_OTLSCAN_PATH": "%CGRU%\\plugins\\houdini\\"
+                    },
+                    {
+                        "PYTHONPATH": "%CGRU%\\plugins\\houdini\\;%CGRU%\\afanasy\\python\\;%CGRU%\\lib\\python\\"
+                    }
+                ]
+            },
+            {
+                "Qlib": [
+                    {
+                        "QLIB": "%CGHOME%\\houdini\\otls\\qLib-dev"
+                    },
+                    {
+                        "QOTL": "%QLIB%\\otls"
+                    },
+                    {
+                        "HOUDINI_OTLSCAN_PATH": "%QOTL%\\base;%QOTL%\\future;%QOTL%\\experimental"
+                    },
+                    {
+                        "HOUDINI_PATH": "%QLIB%"
+                    }
+                ]
+            },
+            {
+                "FXLabs": [
+                    {
+                        "HOUDINI_PATH": "%SIDEFXLABS%"
+                    },
+                    {
+                        "PATH": "%SIDEFXLABS%;%SIDEFXLABS%\\bin"
+                    }
+                ]
+            },
+            {
+                "Megascans": [
+                    {
+                        "PATH": "%CGHOME%\\houdini\\otls\\Megascans"
+                    },
+                    {
+                        "HOUDINI_PATH": "%CGHOME%\\houdini\\otls\\Megascans"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "renders": ""
+    },
+    {
+        "DISABLED ": [
+            {
+                "GameToolset ": [
+                    {
+                        "HOUDINI_PATH": "%CGHOME%\\houdini\\otls\\GameToolset"
+                    },
+                    {
+                        "PATH": "%CGHOME%\\houdini\\otls\\GameToolset"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "rendersDISABLED": [
+            {
+                "Redshift": [
+                    {
+                        "PATH": "%CGHOME%\\houdini\\renders\\Redshift\\bin"
+                    },
+                    {
+                        "HOUDINI_PATH": "%CGHOME%\\houdini\\renders\\Redshift\\Plugins\\Houdini\\17.5.173"
+                    }
+                ]
+            },
+            {
+                "Arnold": [
+                    {
+                        "PATH": "%CGHOME%\\houdini\\renders\\htoa_4.0.0__build_17.5.173\\scripts\\bin"
+                    },
+                    {
+                        "HOUDINI_PATH": "%CGHOME%\\houdini\\renders\\htoa_4.0.0__build_17.5.173"
+                    }
+                ]
+            }
+        ]
+    }
+]

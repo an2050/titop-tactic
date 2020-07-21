@@ -1,0 +1,86 @@
+QWidget {
+    background-color: #3a3a3a;
+    color: #d7d7d7;
+}
+QPushButton {
+    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                      stop: 0 #525353, stop: 1 #363636);
+    border: 2px solid #2e2e2e;
+    padding: 2px;
+    border-radius: 4px;
+}
+QPushButton:hover {
+	background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1
+									  stop : 0 #605032, stop : 1 #363636);
+    border: 2px solid #373532;
+}
+QPushButton:pressed {
+	background-color: #363636;
+}
+QPushButton:disabled {
+  /* border: 1px solid #999999; */
+  background-color: #333333;
+  color: #555555;
+}
+
+QLineEdit {
+    border: 2px solid #303030;
+    border-radius: 3px;
+    background: #1c1d1f;
+    font-size: 15px;
+    padding: 1px;
+}
+QAbstractItemView {
+	alternate-background-color: #2e2e2e;
+	selection-background-color: #605032;
+	border: 1px solid #2e2e2e;
+	font-size: 15px;
+}
+QTreeView:item {
+	height: 25px;
+}
+
+QHeaderView::section {
+    background-color: qlineargradient(x1:0, y1:0, x2:0, y2:1,
+                                      stop:0 #525353, stop: 0.6 #363636);
+    color: white;
+    padding-left: 15px;
+    border: 1px solid #363636;
+}
+
+QScrollBar {
+	background-color: #2e2e2e;
+	/*border: 1px solid #3a3a3a;*/
+}
+QScrollBar:handle {
+	background-color: qlineargradient(x1: 1, y0: 1, x2: 0, y2: 0,
+                                      stop: 0 #525353, stop: 1 #363636);
+	border: 2px solid #2e2e2e;
+	border-radius: 5px;
+}
+
+QGroupBox {
+    border: 2px solid #282724;
+    border-radius: 15px;
+    font-size: 15px;
+}
+
+QGroupBox::title {
+    padding: 0px 5px;
+    padding-top:  -5px;
+
+}
+
+QMenu::item {
+    /*background-color: transparent;*/
+    border: 1px solid #2e2e2e;
+    padding: 4px 25px;
+}
+QMenu::item:selected {
+    background-color: #605032;
+}
+
+ QComboBox {
+    selection-background-color: #605032;
+ }
+ 

@@ -1,0 +1,1 @@
+SET PATH=%CGPIPELINE%\cgru;%PATH%

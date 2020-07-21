@@ -1,0 +1,4 @@
+Когда делается snapshot(checkin) для комментария (notes) формирования пути для файлов (naming convention) происходит в pyasm/biz/dir_naming.py sthpw_note(self_dirs) 
+Snapshot, через API вызывает фукцию simple_checkin(self, ticket, search_key....) в pyasm/prod/service/api_xmlrpc.py
+Запись файлов на диск происходит в pyasm/checkin/repo.py FileUndo.create( src_path, to_path, io_action=io_action, extra={ "md5": md5, "st_size": st_size, "rel_path": rel_path } )
+За добавление комментариев через web интерфейс отвечает фукция execute(self) в src/tactic/ui/widget/discussion_wdg.py

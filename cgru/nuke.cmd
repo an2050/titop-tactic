@@ -1,0 +1,2 @@
+echo CUSTOM NUKE PROCESS
+%CGRU_PYTHONEXE% %CGPIPELINE%\cgru\nuke_render.py %*

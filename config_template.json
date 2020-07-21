@@ -1,0 +1,13 @@
+{
+    "projectTemplate": "r:/{projectName}/episodes/{episodName}/{shotName}",
+    "OTLPaths": {
+        "OTLPath_prj": "{projectName}\\_ASSETS\\{assetName}\\hda",
+        "OTLPath_epi": "{episodName}\\_ASSETS\\{assetName}\\hda",
+        "OTLPath_shot": "{shotName}\\_ASSETS\\{assetName}\\hda"
+    },
+    "Work_Paths": {
+        "workPath_prj": "not considered   {projectName}/ASSETS/{assetName}/{taskName}",
+        "workPath_epi": "not considered   {episodName}/ASSETS/{assetName}/{taskName}",
+        "workPath_shot": "not considered    {shotName}/{taskName}"
+    }
+}

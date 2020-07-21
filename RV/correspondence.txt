@@ -1,0 +1,7 @@
+Hey Andriy,
+You're right that module is missing from the rv module. I'll put in a ticket to fix that. Meanwhile you should still be able to use commands inside of RV. One easy way to try out commands in RV is to enable SG Review (RV -> Preferences -> Packages -> SG Review). Restart RV, then Go to SG Review -> Initialize Shotgun. Once it initializes, you'll get a Python Console under Tools -> Python Console. You can try out commands here. Ex:
+
+from rv import commands, extra_commands
+commands.frame()
+Also the commands should still work if you bundle a package. We wrote a quick guide on how to get started quickly with RV packages here:
+https://community.shotgunsoftware.com/t/how-do-i-write-my-first-package-in-rv/96
