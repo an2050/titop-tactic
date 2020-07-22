@@ -33,7 +33,7 @@ except:
 def __getTaskData():
     userSearchKey = server.build_search_key("sthpw/login", userName)
 
-    taskList = server.query("sthpw/task", [("project_code", project)], columns=["__search_key__", "search_code__", "description", "status", "process"], parent_key=userSearchKey)
+    taskList = server.query("sthpw/task", [("project_code", project)], columns=["__search_key__", "search_code", "description", "status", "process"], parent_key=userSearchKey)
     # print(taskList)
     return __collectTaskData(taskList)
 
@@ -81,7 +81,7 @@ def filterDictKeys(d, keys):
             filteredDict[key] = d[key]
     return filteredDict
 
-# print(__getTaskData())
+print(__getTaskData())
 
 # taskList = server.query("sthpw/note", [("project_code", project)], ["note", "process", "search_code"])
 # print(taskList)

@@ -4,7 +4,7 @@ try:
 except ImportError:
     from PySide.QtCore import QCoreApplication
     from PySide.QtGui import QMessageBox
-test
+
 
 class pathError(Exception):
     def __init__(self, text=""):

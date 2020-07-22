@@ -289,7 +289,7 @@ class UserTaskWidget(QWidget):
 
             userTaskData = self.userServerCore.taskData
 
-            self.treeWidget.taskData = userTaskData
+            # self.treeWidget.taskData = userTaskData
             self.treeWidget.pipelineData = self.userServerCore.pipelineData
             self.treeWidget.project = self.userServerCore.project
 

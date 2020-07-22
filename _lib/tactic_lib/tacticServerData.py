@@ -23,6 +23,12 @@ class userServerCore:
         self.notesData = []
         self.snapshotNotesData = []
 
+        # self.epiColumns = ["__search_key__", "search_code", "description", "name"]
+        # self.shotColumns = ["__search_key__", "search_code", "episodes_code", "description", "name"]
+        # self.assetColumns = ["__search_key__", "search_code", "episodes_code", "description", "name"]
+        # self.taskColums = ["assigned", "__search_key__", "search_code", "description", "status", "process"]
+
+
     def connectToServer(self):
         try:
             server = TacticServerStub()
@@ -96,6 +102,40 @@ class userServerCore:
 
 
 # =================== read server data ======================================
+
+
+    # def __getTaskData(self, readCache=False):
+    #     episodes = self.server.query("main/episodes", columns=self.epiColumns)
+    #     assets = self.server.query("main/asset", columns=self.assetColumns)
+    #     mainAsstes = [asset for asset in assets if not asset.get('episodes_code')] 
+    #     print('+++++++++', mainAsstes)
+
+    #     # episodes += [asset for asset in assets if not asset.get('episodes_code')]
+    #     for episod in episodes:
+    #         episod['children'] = self.getEpisodChildren(episod.get('__search_key__'))
+    #     for asset in mainAsstes:
+    #         asset['children'] = self.getTaskData(asset.get('__search_key__'))
+    #     episodes += mainAsstes
+    #     return episodes
+
+    # def getEpisodChildren(self, sKey):
+    #     assets = self.server.query("main/asset", parent_key=sKey, columns=self.shotColumns)
+    #     shots = self.server.query("default/shots", parent_key=sKey, columns=self.shotColumns)
+    #     episodChildren = assets + shots
+
+    #     for child in episodChildren:
+    #         child['children'] = self.getTaskData(child.get('__search_key__'))
+    #     return episodChildren
+
+
+    # def getTaskData(self, sKey):
+    #     taskData = self.server.query("sthpw/task", parent_key=sKey, columns=self.taskColums)
+    #     return taskData
+
+
+
+
+
 
     def __getTaskData(self, readCache=False):
         if readCache:

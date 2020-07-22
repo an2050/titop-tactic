@@ -21,7 +21,7 @@ rvPlayerPath = 'C:/Program Files/Shotgun/RV-7.8.0/bin'
 
 tacticConfigFile = os.path.join(rootPath, "tactic", "tacticConfig.json")
 
-tacticKeyElements = {"episodes": "episod", "shots": "shot"}  # Items that match the names in TACTIC
+tacticKeyElements = {"episodes": "episod", "shots": "shot"}  # # Items that match the names in TACTIC
 tacticProcessElements = {"comp": "comp"}
 tacticStatusElements = {"Assignment": "Assignment", "Complete": "Complete"}
 
