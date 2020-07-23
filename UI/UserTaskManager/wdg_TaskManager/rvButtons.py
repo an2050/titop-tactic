@@ -31,7 +31,7 @@ class rvButtonsTM():
         self.lay_rvButtons.addWidget(self.watchPreviewButton)
 
     def getProject(self):
-        project = self.taskManagerWdg.project
+        project = self.taskManagerWdg.currentProject.get('code')
         return project
 
     def watchPrm(self):

@@ -125,6 +125,7 @@ def collectSequencePath(paths):
 def runRvPlayer(paths, annotate=False):
     rvplayer = "/".join([configUtils.rvPlayerPath, "rvpush.exe"])
     rvplayer = '"'.join(["", rvplayer, ""])
+    paths = ['"' + path + '"' for path in paths]
     command = " ".join([rvplayer] + [" -tag target merge"] + paths)
     print(command)
     rvProcess = Popen(command, stdout=PIPE, stderr=PIPE)

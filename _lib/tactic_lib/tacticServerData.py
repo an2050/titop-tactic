@@ -34,7 +34,7 @@ class userServerCore:
         # self.assetColumns = ["__search_key__", "search_code", "episodes_code", "description", "name"]
         # self.taskColums = ["assigned", "__search_key__", "search_code", "description", "status", "process"]
 
-    def connectToServer(self):
+    def connectToServer(self, resetTicket=False):
         try:
             server = TacticServerStub()
         except TacticApiException:
@@ -42,82 +42,61 @@ class userServerCore:
             server = TacticServerStub()
 
         print("Connecting to server...")
+
+        if resetTicket:
+            self.setTicket(server)
+
         try:
             server.ping()
         except (AttributeError, Fault):
-
-            _input = False
-            textErr = ""
-            while _input is False:
-                userInput = tacticDataProcess.getCredentialDialog(textErr)
-                if userInput is None:
-                    return
-
-                userName, password, serverIp = [userInput.get('userName'), userInput.get('password'), userInput.get('IpAdress')]
-                server.set_server(serverIp)
-
-                try:
-                    newTicket = server.get_ticket(userName, password)
-                    server.set_login_ticket(newTicket)
-                    tacticDataProcess.storeUserTicket(serverIp, userName, newTicket)
-                    _input = True
-                except Fault:
-                    textErr = "Login/Password combination incorrect"
-                    print(textErr)
-                except (gaierror):
-                    textErr = "Socket problem"
-                    print(textErr)
-                except (TimeoutError, ConnectionRefusedError):
-                    textErr = "A connection attempt failed. Check IP adress."
-                    print(textErr)
+            if self.setTicket(server) is None:
+                return
 
         self.connected = True
         self.server = server
         self.userName = tacticDataProcess.getTicketData().get('login')
         self.IpAdress = tacticDataProcess.getTicketData().get('IpAdress')
         self.ticket = tacticDataProcess.getTicketData().get('ticket')
-        # return server
 
-    # def setCredential(sefl):
-    #     credential = tacticDataProcess.getCredentialDialog()
-    #     if credential is None:
-    #         return
-    #     print("Input new credential")
-    #     serverIp = "192.168.88.197"
-    #     userName = credential.get('userName')
-    #     password = credential.get('password')
+    def setTicket(self, server):
+        _input = False
+        textErr = ""
+        while _input is False:
+            userInput = tacticDataProcess.getCredentialDialog(textErr)
+            if userInput is None:
+                return
 
-        # server.set_server(self.serverIp)
-        # server.set_project(self.project)
-        # # print("IP: ", self.serverIp, "User :", self.userName, "Password ", self.password)
-        # print("Connecting to tactic server...")
-        # try:
-        #     ticket = server.get_ticket(self.userName, self.password)
-        #     server.set_ticket(ticket)
-        #     self.connected = True
-        #     self.server = server
-        #     print("Connect successful")
-        #     return server
-        # except (TimeoutError, ConnectionRefusedError):
-        #     print("A connection attempt failed. Check IP adress.")
-        # except:
-        #     print("Login/Password combination incorrect")
+            userName, password, serverIp = [userInput.get('userName'), userInput.get('password'), userInput.get('IpAdress')]
+            server.set_server(serverIp)
 
-        # self.connected = False
-        # self.taskData = []
-        # return None
+            try:
+                newTicket = server.get_ticket(userName, password)
+                server.set_login_ticket(newTicket)
+                tacticDataProcess.storeUserTicket(serverIp, userName, newTicket)
+                _input = True
+            except Fault:
+                textErr = "Login/Password combination incorrect"
+                print(textErr)
+            except (gaierror):
+                textErr = "Socket problem"
+                print(textErr)
+            except (TimeoutError, ConnectionRefusedError):
+                textErr = "A connection attempt failed. Check IP adress."
+                print(textErr)
+        return True
 
-    def refreshTaskData(self, prj_code):
-        if self.connected:
-            self.taskData = self.__getTaskData(prj_code, False)
-            self.pipelineData = self.__getPipelineData()
-            self.notesData = self.__getNotesData()
-            self.snapshotNotesData = self.__getSnapshotNotesData()
-            # print(self.pipelineData)
 
-    def refreshNotesData(self):
-        self.notesData = self.__getNotesData()
-        self.snapshotNotesData = self.__getSnapshotNotesData()
+    def resetProjectData(self, prj_code):
+        # if self.connected:
+        self.taskData = self.__getTaskData(prj_code, False)
+        self.pipelineData = self.__getPipelineData(prj_code)
+        self.notesData = self.__getNotesData(prj_code)
+        self.snapshotNotesData = self.__getSnapshotNotesData(prj_code)
+        # print(self.pipelineData)
+
+    def refreshNotesData(self, prj_code):
+        self.notesData = self.__getNotesData(prj_code)
+        self.snapshotNotesData = self.__getSnapshotNotesData(prj_code)
 
     def getProjecstData(self, readCache=False):
         # if self.connected:
@@ -129,19 +108,19 @@ class userServerCore:
         #     projectData = ['no connection to server']
         return projectData
 
-    def __getPipelineData(self, filters=[], readCache=False):
-        filters = [("project_code", self.project), ("search_type", "sthpw/task")]
+    def __getPipelineData(self, prj_code, filters=[], readCache=False):
+        filters = [("project_code", prj_code), ("search_type", "sthpw/task")]
         pipelineData = self.server.query("sthpw/pipeline", filters)
         return pipelineData
 
-    def __getNotesData(self):
-        filters = [("project_code", self.project)]
+    def __getNotesData(self, prj_code):
+        filters = [("project_code", prj_code)]
         fields = ["search_code", "code", "process", "note", "login", "timestamp"]
         notesData = self.server.query("sthpw/note", filters, fields)
         return notesData
 
-    def __getSnapshotNotesData(self):
-        snapshots = self.server.query_snapshots([("project_code", self.project), ("search_type", "sthpw/note"), ("context", "notes/attachment")], include_paths_dict=True)
+    def __getSnapshotNotesData(self, prj_code):
+        snapshots = self.server.query_snapshots([("project_code", prj_code), ("search_type", "sthpw/note"), ("context", "notes/attachment")], include_paths_dict=True)
         columns = ["__search_key__", "__paths_dict__", "search_code"]
         snapshots = [configUtils.filterDictKeys(snap, columns) for snap in snapshots]
         for i, snapshot in enumerate(snapshots):

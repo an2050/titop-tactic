@@ -63,8 +63,12 @@ class UserTaskWidget(QWidget):
         self.userLable = QLabel(self)
         self.userLable.setAlignment(Qt.AlignRight | Qt.AlignCenter)
         self.userLable.setText("User:")
-        self.userNameField = QLineEdit(self)
-        self.userNameField.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+        self.userButton = QPushButton("user")
+        # self.userNameField = QLineEdit(self)
+        # self.userNameField.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
+
+
+
         # self.userNameField.setText(sysUserName)
         # - filters
         self.filterShotField = QLineEdit(self)
@@ -91,9 +95,11 @@ class UserTaskWidget(QWidget):
         self.itemsUtils = itemsUtils.ItemsUtils(self)
 
         # ======================= CONNECTS ===============================
+        self.userButton.clicked.connect(self.changeUser)
+
         self.treeWidget.currentItemChanged.connect(self.treeItemChanged)
 
-        self.userNameField.editingFinished.connect(self.changedUser_lineEdit)
+        # self.userNameField.editingFinished.connect(self.changedUser_lineEdit)
         self.refreshButton.clicked.connect(self.refreshTaskDataButton)
         self.project_comboBox.currentIndexChanged.connect(self.changedProject_dorpList)
 
@@ -111,7 +117,8 @@ class UserTaskWidget(QWidget):
         self.lay_upLeftHorizontal.addWidget(self.project_comboBox)
         self.lay_upLeftHorizontal.addWidget(self.refreshButton)
         self.lay_upLeftHorizontal.addWidget(self.userLable)
-        self.lay_upLeftHorizontal.addWidget(self.userNameField)
+        self.lay_upLeftHorizontal.addWidget(self.userButton)
+        # self.lay_upLeftHorizontal.addWidget(self.userNameField)
 
         self.lay_upLeftHorizontal_2.addWidget(self.filterShot_Lable)
         self.lay_upLeftHorizontal_2.addWidget(self.filterShotField)
@@ -138,6 +145,7 @@ class UserTaskWidget(QWidget):
         # self.treeWidget.styleCSS = styleCSS
 
         # self.setConnection()
+# ========================================================================================
 
     def setConnection(self):
         self.userServerCore = tacticServerData.userServerCore()
@@ -145,32 +153,19 @@ class UserTaskWidget(QWidget):
 
     def initializeWidgetData(self):
         # if self.userServerCore.server:
-        self.userNameField.setText(self.userServerCore.userName)
-
+        # self.userNameField.setText(self.userServerCore.userName)
+        self.userButton.setText(self.userServerCore.userName)
         self.settProjectList_comboBox()
-        # self.refreshUserTaskData()
+        self.setStatusList_comboBox()
+        self.refreshUserTaskData()
         self.setStatusList_comboBox()
         self.commentBlock.server = self.userServerCore.server
-            # return True
-        # else:
-            # self.project_comboBox.addItems(["no connection to server"])
-            # return False
 
-# ========================================================================================
-    # def getCredentialData(self):
-    #     credentialData = {}
-    #     credential = CredentialtWindow.CredentialDialog(self)
-    #     accepted = credential.exec_()
-    #     if accepted:
-    #         credentialData = credential.getData()
-    #         return credentialData
-
-
-    def getServerIp(self):
-        configData = configUtils.loadConfigData(tacticConfigFile)
-        if configData is None:
-            return ""
-        return configUtils.loadConfigData(tacticConfigFile).get("serverIp")
+    # def getServerIp(self):
+    #     configData = configUtils.loadConfigData(tacticConfigFile)
+    #     if configData is None:
+    #         return ""
+    #     return configUtils.loadConfigData(tacticConfigFile).get("serverIp")
 
 # ===========Fill Project & Status drop down lists =======================================
     def settProjectList_comboBox(self):
@@ -186,6 +181,7 @@ class UserTaskWidget(QWidget):
         self.currentProject = {"title": self.project_comboBox.currentText(), "code": self.project_comboBox.currentData()}
         # print(self.currentProject)
         # print(self.project_comboBox.currentData())
+
         self.project_comboBox.blockSignals(False)
         #     self.project_comboBox.addItems(["no connection to server"])
         # else:
@@ -212,41 +208,16 @@ class UserTaskWidget(QWidget):
 # ==============================================================
 
 # ===================== Connects ==========================
-    def changedUser_lineEdit(self):
-        self.project_comboBox.blockSignals(True)
-        self.clearCombobBoxWidgetList(self.project_comboBox)
-        self.treeWidget.clear()
-
-        typedName = self.userNameField.text()
-        if typedName != sysUserName:
-            self.userNameField.blockSignals(True)
-            typedPassword, ok = QInputDialog().getText(self, "", "Password:", QLineEdit.Password)
-            self.userNameField.blockSignals(False)
-
-            if ok:
-                self.userServerCore.userName = typedName
-                self.userServerCore.password = typedPassword
-                self.userServerCore.project = None
-                self.userServerCore.connectToServer()
-                if self.userServerCore.connected is False:
-                    print("Login/Password incorrect")
-                    return None
-            else:
-                return None
-        else:
-            self.userServerCore.password = password
-            self.userServerCore.userName = sysUserName
-            self.userServerCore.connectToServer()
-        self.settProjectList_comboBox()
-        self.refreshUserTaskData()
-        self.project_comboBox.blockSignals(False)
+    def changeUser(self):
+        self.userServerCore.connectToServer(True)
+        self.initializeWidgetData()
 
     def changedProject_dorpList(self):
-        # self.userServerCore.project = self.project_comboBox.currentText()
+        self.currentProject = {"title": self.project_comboBox.currentText(), "code": self.project_comboBox.currentData()}
         self.refreshUserTaskData()
 
         configData = configUtils.loadConfigData(taskManagerConfigFile)
-        configData["activeProject"] = self.project_comboBox.currentData()
+        configData["activeProject"] = self.currentProject.get('code')
         configUtils.saveConfigData(taskManagerConfigFile, configData)
 
     def treeItemChanged(self, current, previous):
@@ -283,7 +254,7 @@ class UserTaskWidget(QWidget):
     #     self.filterTreeByStatus()
 
     def refreshCommentData(self):
-        self.userServerCore.refreshNotesData()
+        self.userServerCore.refreshNotesData(self.currentProject.get('code'))
         # self.userServerCore.refreshNotesData()
         try:
             selectedItem = self.treeWidget.selectedItems()[0]
@@ -296,36 +267,21 @@ class UserTaskWidget(QWidget):
         self.setStatusList_comboBox()
 
     def refreshUserTaskData(self, resetFilter=False):
-        self.userServerCore.serverIp = self.getServerIp()
-        self.userServerCore.userName = self.userNameField.text()
+        self.userServerCore.resetProjectData(self.currentProject.get('code'))
+        userTaskData = self.userServerCore.taskData
 
-        if self.project_comboBox.currentText() == "no connection to server":
-            self.clearCombobBoxWidgetList(self.project_comboBox)
-            self.userServerCore.project = None
-            self.userServerCore.connectToServer()
-            self.settProjectList_comboBox()
+        self.treeWidget.pipelineData = self.userServerCore.pipelineData
+        self.treeWidget.project = self.currentProject.get('code')
 
-        self.userServerCore.project = self.project_comboBox.currentText()
-        # self.userServerCore.connectToServer()
-        if self.userServerCore.connected:
-            self.userServerCore.refreshTaskData(self.project_comboBox.currentData())
-
-            userTaskData = self.userServerCore.taskData
-            print(userTaskData, "========================================")
-
-            # self.treeWidget.taskData = userTaskData
-            self.treeWidget.pipelineData = self.userServerCore.pipelineData
-            self.treeWidget.project = self.userServerCore.project
-
-            if userTaskData is not None:
-                if resetFilter:
-                    self.treeWidget.treeIndexItem = []
-                    self.filterShotField.setText("")
-                    self.treeWidget.completeTree(userTaskData)
-                else:
-                    self.filterTreeByStatus()
+        if userTaskData is not None:
+            if resetFilter:
+                self.treeWidget.treeIndexItem = []
+                self.filterShotField.setText("")
+                self.treeWidget.completeTree(userTaskData)
             else:
-                self.treeWidget.clear()
+                self.filterTreeByStatus()
+        else:
+            self.treeWidget.clear()
 
 # =============== Filters =============================
     def filterShot(self, text):

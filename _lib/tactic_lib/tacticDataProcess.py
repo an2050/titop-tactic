@@ -52,6 +52,10 @@ def createSthpwUserFile(user):
     f = open(filePath, "w")
     f.close()
 
+def removeTicket(userName):
+    ticket = getTicketData()
+    
+    # os.remove(tacticTicket)
 
 # Search key ========================
 def getTaskElementBySearchKey(data, searchKey):
