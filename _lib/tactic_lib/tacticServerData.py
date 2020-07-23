@@ -3,11 +3,15 @@ import sys
 # import time
 from . import tacticDataProcess
 
+from xmlrpc.client import Fault
+from socket import gaierror
+
 tacticApi = os.path.join(os.environ.get('CGPIPELINE'), "tactic", "client")
 _lib = os.path.join(os.environ.get('CGPIPELINE'), "_lib")
 sys.path += [tacticApi, _lib]
 
 from tactic_client_lib import TacticServerStub
+from tactic_client_lib.tactic_server_stub import TacticApiException
 from _lib import configUtils
 
 class userServerCore:
@@ -17,48 +21,95 @@ class userServerCore:
         self.password = ""
         self.connected = False
         self.server = None
-        self.project = ""
-        self.TaskData = []
+        # self.project = ""
+        self.taskData = []
         self.pipelineData = []
         self.notesData = []
         self.snapshotNotesData = []
+
+        self.projectClms = ["code", "title", "description", "status", "__search_key__"]
 
         # self.epiColumns = ["__search_key__", "search_code", "description", "name"]
         # self.shotColumns = ["__search_key__", "search_code", "episodes_code", "description", "name"]
         # self.assetColumns = ["__search_key__", "search_code", "episodes_code", "description", "name"]
         # self.taskColums = ["assigned", "__search_key__", "search_code", "description", "status", "process"]
 
-
     def connectToServer(self):
         try:
             server = TacticServerStub()
-        except:
-            tacticDataProcess.createSthpwUserFile(self.userName)
+        except TacticApiException:
+            tacticDataProcess.createSthpwUserFile(os.getlogin())
             server = TacticServerStub()
 
-        server.set_server(self.serverIp)
-        server.set_project(self.project)
-        # print("IP: ", self.serverIp, "User :", self.userName, "Password ", self.password)
-        print("Connecting to tactic server...")
+        print("Connecting to server...")
         try:
-            ticket = server.get_ticket(self.userName, self.password)
-            server.set_ticket(ticket)
-            self.connected = True
-            self.server = server
-            print("Connect successful")
-            return server
-        except (TimeoutError, ConnectionRefusedError):
-            print("A connection attempt failed. Check IP adress.")
-        except:
-            print("Login/Password combination incorrect")
+            server.ping()
+        except (AttributeError, Fault):
 
-        self.connected = False
-        self.taskData = []
-        return None
+            _input = False
+            textErr = ""
+            while _input is False:
+                userInput = tacticDataProcess.getCredentialDialog(textErr)
+                if userInput is None:
+                    return
 
-    def refreshTaskData(self):
+                userName, password, serverIp = [userInput.get('userName'), userInput.get('password'), userInput.get('IpAdress')]
+                server.set_server(serverIp)
+
+                try:
+                    newTicket = server.get_ticket(userName, password)
+                    server.set_login_ticket(newTicket)
+                    tacticDataProcess.storeUserTicket(serverIp, userName, newTicket)
+                    _input = True
+                except Fault:
+                    textErr = "Login/Password combination incorrect"
+                    print(textErr)
+                except (gaierror):
+                    textErr = "Socket problem"
+                    print(textErr)
+                except (TimeoutError, ConnectionRefusedError):
+                    textErr = "A connection attempt failed. Check IP adress."
+                    print(textErr)
+
+        self.connected = True
+        self.server = server
+        self.userName = tacticDataProcess.getTicketData().get('login')
+        self.IpAdress = tacticDataProcess.getTicketData().get('IpAdress')
+        self.ticket = tacticDataProcess.getTicketData().get('ticket')
+        # return server
+
+    # def setCredential(sefl):
+    #     credential = tacticDataProcess.getCredentialDialog()
+    #     if credential is None:
+    #         return
+    #     print("Input new credential")
+    #     serverIp = "192.168.88.197"
+    #     userName = credential.get('userName')
+    #     password = credential.get('password')
+
+        # server.set_server(self.serverIp)
+        # server.set_project(self.project)
+        # # print("IP: ", self.serverIp, "User :", self.userName, "Password ", self.password)
+        # print("Connecting to tactic server...")
+        # try:
+        #     ticket = server.get_ticket(self.userName, self.password)
+        #     server.set_ticket(ticket)
+        #     self.connected = True
+        #     self.server = server
+        #     print("Connect successful")
+        #     return server
+        # except (TimeoutError, ConnectionRefusedError):
+        #     print("A connection attempt failed. Check IP adress.")
+        # except:
+        #     print("Login/Password combination incorrect")
+
+        # self.connected = False
+        # self.taskData = []
+        # return None
+
+    def refreshTaskData(self, prj_code):
         if self.connected:
-            self.taskData = self.__getTaskData(False)
+            self.taskData = self.__getTaskData(prj_code, False)
             self.pipelineData = self.__getPipelineData()
             self.notesData = self.__getNotesData()
             self.snapshotNotesData = self.__getSnapshotNotesData()
@@ -69,11 +120,13 @@ class userServerCore:
         self.snapshotNotesData = self.__getSnapshotNotesData()
 
     def getProjecstData(self, readCache=False):
-        if self.connected:
-            projectData = self.server.query("sthpw/project")
+        # if self.connected:
+        # print(server.query('sthpw/project', columns=["code"]))
+        projectData = self.server.query("sthpw/project", columns=self.projectClms)
+        projectData = filter(lambda x: x.get('code') not in ["sthpw", "admin"], projectData)
             # tacticDataProcess.saveDiskCache(projectData, tacticDataProcess.tacticProjectFileCache)
-        else:
-            projectData = ['no connection to server']
+        # else:
+        #     projectData = ['no connection to server']
         return projectData
 
     def __getPipelineData(self, filters=[], readCache=False):
@@ -137,13 +190,13 @@ class userServerCore:
 
 
 
-    def __getTaskData(self, readCache=False):
+    def __getTaskData(self, prj_code, readCache=False):
         if readCache:
             return tacticDataProcess.readDiskCache(tacticDataProcess.tacticTaskFileCache)
         else:
             userSearchKey = self.server.build_search_key("sthpw/login", self.userName)
             try:
-                taskList = self.server.query("sthpw/task", [("project_code", self.project)], parent_key=userSearchKey)
+                taskList = self.server.query("sthpw/task", [("project_code", prj_code)], parent_key=userSearchKey)
             except:
                 print("No have premission for prject '{}'".format(self.project))
                 return None
@@ -193,6 +246,7 @@ class userServerCore:
     def updateTaskData(self, searchKey, data):
         if self.connected:
             self.server.update(searchKey, data)
+
 
 if __name__ == "__main__":
     serverIp = "192.168.1.249:9000"

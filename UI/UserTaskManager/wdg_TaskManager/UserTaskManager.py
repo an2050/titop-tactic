@@ -12,6 +12,7 @@ from PySide2.QtCore import Qt
 from UI.UserTaskManager.wdg_TreeTaskList.treeWidgetTaskList import TreeTaskList
 # from UI.UserTaskManager.wdg_Comments.tableCommentList import TableCommentList
 from UI.UserTaskManager.wdg_Comments.CommentBlockWidget import CommentBlockWidget
+from UI.CredentialWindow import CredentialtWindow
 
 from UI.UserTaskManager.utils import itemsUtils
 
@@ -28,8 +29,10 @@ tacticConfigFile = configUtils.tacticConfigFile
 pythonExe = os.path.join(configUtils.pythonDir, "python27", "python.exe")
 starterPath = [pythonExe, configUtils.starterPath]
 
-sysUserName = getpass.getuser()
-password = "123"
+# sysUserName = getpass.getuser()
+# password = "123"
+
+
 
 
 class UserTaskWidget(QWidget):
@@ -37,9 +40,8 @@ class UserTaskWidget(QWidget):
     def __init__(self, parent=None):
         super(UserTaskWidget, self).__init__(parent)
 
-        # self.filterActive = False
-
         self.project = ""
+        self.currentProject = {}
 
         self.resize(1280, 720)
 
@@ -63,7 +65,7 @@ class UserTaskWidget(QWidget):
         self.userLable.setText("User:")
         self.userNameField = QLineEdit(self)
         self.userNameField.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
-        self.userNameField.setText(sysUserName)
+        # self.userNameField.setText(sysUserName)
         # - filters
         self.filterShotField = QLineEdit(self)
         self.filterShotField.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -135,21 +137,35 @@ class UserTaskWidget(QWidget):
         self.treeWidget.taskManagerConfigFile = taskManagerConfigFile
         # self.treeWidget.styleCSS = styleCSS
 
-        self.userServerCore = tacticServerData.userServerCore()
-        self.userServerCore.serverIp = self.getServerIp()
-        self.userServerCore.userName = sysUserName
-        self.userServerCore.password = password
+        # self.setConnection()
 
-        connected = self.userServerCore.connectToServer()
-        if connected:
-            self.settProjectList_comboBox()
-            self.refreshUserTaskData()
-            self.setStatusList_comboBox()
-            self.commentBlock.server = self.userServerCore.server
-        else:
-            self.project_comboBox.addItems(["no connection to server"])
+    def setConnection(self):
+        self.userServerCore = tacticServerData.userServerCore()
+        self.userServerCore.connectToServer()
+
+    def initializeWidgetData(self):
+        # if self.userServerCore.server:
+        self.userNameField.setText(self.userServerCore.userName)
+
+        self.settProjectList_comboBox()
+        # self.refreshUserTaskData()
+        self.setStatusList_comboBox()
+        self.commentBlock.server = self.userServerCore.server
+            # return True
+        # else:
+            # self.project_comboBox.addItems(["no connection to server"])
+            # return False
 
 # ========================================================================================
+    # def getCredentialData(self):
+    #     credentialData = {}
+    #     credential = CredentialtWindow.CredentialDialog(self)
+    #     accepted = credential.exec_()
+    #     if accepted:
+    #         credentialData = credential.getData()
+    #         return credentialData
+
+
     def getServerIp(self):
         configData = configUtils.loadConfigData(tacticConfigFile)
         if configData is None:
@@ -161,16 +177,23 @@ class UserTaskWidget(QWidget):
         self.project_comboBox.blockSignals(True)
         projectsData = self.userServerCore.getProjecstData()
         self.clearCombobBoxWidgetList(self.project_comboBox)
-        if "no connection to server" in projectsData:
-            self.project_comboBox.addItems(["no connection to server"])
-        else:
-            prjList = tacticDataProcess.filterElementsData(projectsData, [("status", None)], ["code"])
-            prjList = [list(x.values())[0] for x in prjList if list(x.values())[0] not in ["admin", "sthpw", None]]
-            activeProject = configUtils.loadConfigData(taskManagerConfigFile).get("activeProject")
-            prjList = sorted(prjList, key=lambda x: x != activeProject)
-            self.project_comboBox.addItems(prjList)
-            self.project = self.project_comboBox.currentText()
+
+        prjList = tacticDataProcess.filterElementsData(projectsData, [("status", None)], fields=["title", "code"])
+        activeProject = configUtils.loadConfigData(taskManagerConfigFile).get("activeProject")
+        prjList = sorted(prjList, key=lambda x: x.get('code') != activeProject)
+        [self.project_comboBox.addItem(prjItem.get('title'), prjItem.get('code')) for prjItem in prjList]
+
+        self.currentProject = {"title": self.project_comboBox.currentText(), "code": self.project_comboBox.currentData()}
+        # print(self.currentProject)
+        # print(self.project_comboBox.currentData())
         self.project_comboBox.blockSignals(False)
+        #     self.project_comboBox.addItems(["no connection to server"])
+        # else:
+        # prjList = [(prj.get('title'), prj.get('__search_key__')) for prj in prjList]
+        # print(prjList)
+        # self.project_comboBox.addItems(prjList)
+        # self.project = self.project_comboBox.currentText()
+
 
     def setStatusList_comboBox(self):
         self.filterStatus_comboBox.blockSignals(True)
@@ -219,11 +242,11 @@ class UserTaskWidget(QWidget):
         self.project_comboBox.blockSignals(False)
 
     def changedProject_dorpList(self):
-        self.userServerCore.project = self.project_comboBox.currentText()
+        # self.userServerCore.project = self.project_comboBox.currentText()
         self.refreshUserTaskData()
 
         configData = configUtils.loadConfigData(taskManagerConfigFile)
-        configData["activeProject"] = self.project_comboBox.currentText()
+        configData["activeProject"] = self.project_comboBox.currentData()
         configUtils.saveConfigData(taskManagerConfigFile, configData)
 
     def treeItemChanged(self, current, previous):
@@ -283,11 +306,12 @@ class UserTaskWidget(QWidget):
             self.settProjectList_comboBox()
 
         self.userServerCore.project = self.project_comboBox.currentText()
-        self.userServerCore.connectToServer()
+        # self.userServerCore.connectToServer()
         if self.userServerCore.connected:
-            self.userServerCore.refreshTaskData()
+            self.userServerCore.refreshTaskData(self.project_comboBox.currentData())
 
             userTaskData = self.userServerCore.taskData
+            print(userTaskData, "========================================")
 
             # self.treeWidget.taskData = userTaskData
             self.treeWidget.pipelineData = self.userServerCore.pipelineData
@@ -363,8 +387,13 @@ class UserTaskWidget(QWidget):
 if __name__ == "__main__":
     app = QApplication()
     app.setStyle(QStyleFactory.create("Fusion"))
-    window = UserTaskWidget()
-    window.show()
+
+    taskManager = UserTaskWidget()
+    taskManager.setConnection()
+    if taskManager.userServerCore.connected:
+        taskManager.initializeWidgetData()
+        taskManager.show()
+
     app.exec_()
 
 
