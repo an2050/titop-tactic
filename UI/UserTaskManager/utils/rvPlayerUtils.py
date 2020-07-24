@@ -4,7 +4,8 @@ from subprocess import Popen, PIPE
 
 from _lib import pathUtils, configUtils, sequenceUtils, exceptionUtils
 
-from . import itemsUtils
+from UI.UserTaskManager.wdg_TreeTaskList.itemUtils import ItemUtils
+from . import projectUtils
 
 
 def raiseMessage(text):
@@ -17,7 +18,7 @@ def watchPrm(project, selectedItems):
     if len(selectedItems) == 0:
         return
 
-    keyPrjData = itemsUtils.getKeyPrjData(project, selectedItems[0])
+    keyPrjData = projectUtils.getKeyPrjData(project, selectedItems[0])
     path = pathUtils.getPRM_Path(keyPrjData)
     try:
         catalogList = os.listdir(path)
@@ -73,8 +74,8 @@ def watchPreview(project, selectedItem, annotate=False):
     if selectedItem is None:
         return
 
-    keyPrjData = itemsUtils.getKeyPrjData(project, selectedItem)
-    keyTaskData = itemsUtils.getItemTaskData(selectedItem, keyPrjData)
+    keyPrjData = projectUtils.getKeyPrjData(project, selectedItem)
+    keyTaskData = projectUtils.getItemTaskData(selectedItem, keyPrjData)
 
     filePath = None
     filePaths = []
@@ -101,7 +102,7 @@ def getWatchPath(func, project, selectedItems, version=None):
 
     pathsList = []
     for item in selectedItems:
-        keyPrjData = itemsUtils.getKeyPrjData(project, item)
+        keyPrjData = projectUtils.getKeyPrjData(project, item)
         if version is not None:
             path = func(keyPrjData, version)
         else:

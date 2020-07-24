@@ -12,11 +12,12 @@ compProcess = tacticProcessElements['comp']
 
 
 class TextCommentDialg(QDialog):
-    def __init__(self, commentBlockWidget, taskManagerWdg):
+    def __init__(self, commentBlockWidget, taskManagerWdg, treeWidget):
         super(TextCommentDialg, self).__init__(taskManagerWdg)
         self.commentBlockWidget = commentBlockWidget
         self.taskManagerWdg = taskManagerWdg
-        self.itemsUtils = taskManagerWdg.itemsUtils
+        self.treeWidget = treeWidget
+        self.itemUtils = self.treeWidget.itemUtils
 
         self.action = ""
         self.taskItem = None
@@ -56,7 +57,7 @@ class TextCommentDialg(QDialog):
         text = self.textField.toPlainText()
 
         if self.action == "Add":
-            taskItem = self.taskManagerWdg.itemsUtils.getSelected_ProcessItem()
+            taskItem = self.itemUtils.getSelected_ProcessItem()
             if taskItem is None:
                 return
             shotSkey = taskItem.parent().data(0, Qt.UserRole)

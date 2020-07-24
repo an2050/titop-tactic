@@ -9,6 +9,9 @@ from _lib import configUtils
 
 from _lib.tactic_lib import tacticDataProcess
 
+# from .itemUtils import ItemUtils
+from . import itemUtils
+
 # styleCSS = os.path.join(os.path.abspath("../css"), "style.css")
 
 
@@ -36,6 +39,9 @@ class TreeTaskList(QTreeWidget):
         # ======================= CONNECTS ===============================
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.callContextMenu)
+
+        # ======================= UTILS ===============================
+        self.itemUtils = itemUtils.ItemUtils(self)
 
     def completeTree(self, data, filterItems=False, filterElement=""):
         self.blockSignals(True)

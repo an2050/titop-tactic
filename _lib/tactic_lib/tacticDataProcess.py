@@ -79,10 +79,10 @@ def __runTaskDataSearchKey(data, searchKey):
 
 
 def filterElementsData(data, filters=[], fields=False):
-    # print(data)
+
     newData = []
     for element in data:
-        # print("==========", element)
+
         filterStatus = True
         for _filter in filters:
             if element.get(_filter[0]) != _filter[1]:

@@ -4,12 +4,12 @@ from PySide2.QtCore import Qt
 from _lib import configUtils
 
 
-class ItemsUtils(object):
+class ItemUtils(object):
 
-    def __init__(self, userTaskWidget):
-        self.userTaskWidget = userTaskWidget
+    def __init__(self, treeWidget):
+        # self.userTaskWidget = userTaskWidget
+        self.treeWidget = treeWidget
         self.tacticElements = configUtils.tacticKeyElements
-        self.treeWidget = self.userTaskWidget.treeWidget
 
     def getSelected_ProcessItem(self):
         try:
@@ -23,7 +23,7 @@ class ItemsUtils(object):
 
         if selectedItem.childCount() > 1:
             lst = [selectedItem.child(x).text(0) for x in range(selectedItem.childCount())]
-            i, ok = QInputDialog().getItem(self.userTaskWidget, "Dialog Title", "Lable:", lst, 0, False)
+            i, ok = QInputDialog().getItem(self.treeWidget, "Dialog Title", "Lable:", lst, 0, False)
             if not ok:
                 return None
             idx = lst.index(i)
@@ -36,25 +36,24 @@ class ItemsUtils(object):
     def getSelected_shotItems(self):
 
         selectedItems = self.treeWidget.selectedItems()
-        print(type(self.treeWidget))
         try:
-            if len(selectedItems) == 1 and selectedItems[0].parent().data(0, Qt.UserRole).find(self.tacticElements['shots']) >= 0:
+            if len(selectedItems) == 1 and selectedItems[0].parent().data(0, Qt.UserRole).find(self.tacticElements['shot']) >= 0:
                 return [selectedItems[0].parent()]
         except AttributeError:
             pass
 
-        episodes = list(filter(lambda x: x.data(0, Qt.UserRole).find(self.tacticElements['episodes']) >= 0, selectedItems))
+        episodes = list(filter(lambda x: x.data(0, Qt.UserRole).find(self.tacticElements['episode']) >= 0, selectedItems))
         if len(episodes) > 0:
             # Getting shots for all selected episodes
             items = []
             for episod in episodes:
-                items += [episod.child(x) for x in range(episod.childCount()) if episod.child(x).data(0, Qt.UserRole).find(self.tacticElements['shots']) >= 0]
+                items += [episod.child(x) for x in range(episod.childCount()) if episod.child(x).data(0, Qt.UserRole).find(self.tacticElements['shot']) >= 0]
             # Gettin all selected shot items
-            allSelectedShots = list(filter(lambda x: x.data(0, Qt.UserRole).find(self.tacticElements['shots']) >= 0, selectedItems))
+            allSelectedShots = list(filter(lambda x: x.data(0, Qt.UserRole).find(self.tacticElements['shot']) >= 0, selectedItems))
             return list(set(items + allSelectedShots))
 
         else:
-            return list(filter(lambda x: x.data(0, Qt.UserRole).find(self.tacticElements['shots']) >= 0, selectedItems))
+            return list(filter(lambda x: x.data(0, Qt.UserRole).find(self.tacticElements['shot']) >= 0, selectedItems))
 
 
 def getKeyPrjData(projectName, selectedItem):

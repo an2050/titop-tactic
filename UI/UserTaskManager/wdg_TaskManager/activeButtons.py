@@ -3,15 +3,16 @@ import subprocess
 from PySide2.QtWidgets import *
 from PySide2.QtCore import Qt
 from _lib import configUtils
-from UI.UserTaskManager.utils import itemsUtils
+from UI.UserTaskManager.wdg_TreeTaskList.itemUtils import ItemUtils
 
 compProcess = configUtils.tacticProcessElements['comp']
 
 class activeButtonsTM():
 
-    def __init__(self, taskManagerWdg):
-        self.taskManagerWdg = taskManagerWdg
-        self.itemsUtils = self.taskManagerWdg.itemsUtils
+    def __init__(self, taskManager, treeWidget):
+        self.taskManager = taskManager
+        self.treeWidget = treeWidget
+        self.itemUtils = self.treeWidget.itemUtils
 
         self.lay_activeButtons = QVBoxLayout()
 
@@ -33,7 +34,7 @@ class activeButtonsTM():
         self.lay_activeButtons.addWidget(self.pendingButton)
 
     def getProjectName(self):
-        return self.taskManagerWdg.project
+        return self.taskManager.currentProject.get('code')
 
     def setPending(self, item=None):
         self.updateStatus("Pending", item)
@@ -43,36 +44,36 @@ class activeButtonsTM():
 
     def updateStatus(self, status, item=None):
         if item is None or item is False:
-            item = self.itemsUtils.getSelected_ProcessItem()
+            item = self.itemUtils.getSelected_ProcessItem()
         if not item:
             return
         searchKey = item.data(0, Qt.UserRole)
         data = {"status": status}
-        self.taskManagerWdg.userServerCore.updateTaskData(searchKey, data)
-        self.taskManagerWdg.refreshUserTaskData()
+        self.taskManager.userServerCore.updateTaskData(searchKey, data)
+        self.taskManager.refreshUserTaskData()
 
     def autoInProgressStatus(self, selectedItem):
         itemStatus = selectedItem.text(1)
         if itemStatus in ["Ready to Start", "Assignment", "Rework"]:
-            messageDialog = QMessageBox(text='Update to "In Progress" status?', parent=self.taskManagerWdg)
+            messageDialog = QMessageBox(text='Update to "In Progress" status?', parent=self.taskManager)
             messageDialog.setStyleSheet("QPushButton{ width:60px; font-size: 15px; }")
             messageDialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             confirm = messageDialog.exec_()
             if confirm == QMessageBox.Yes:
                 self.setInProgress(selectedItem)
         else:
-            self.taskManagerWdg.refreshUserTaskData()
+            self.taskManager.refreshUserTaskData()
 
     def runSoft(self):
-        selectedItem = self.itemsUtils.getSelected_ProcessItem()
+        selectedItem = self.itemUtils.getSelected_ProcessItem()
         if selectedItem is None:
             return
 
-        keyPrjData = itemsUtils.getKeyPrjData(self.getProjectName(), selectedItem)
-        keyTaskData = itemsUtils.getItemTaskData(selectedItem, keyPrjData)
+        keyPrjData = itemUtils.getKeyPrjData(self.getProjectName(), selectedItem)
+        keyTaskData = itemUtils.getItemTaskData(selectedItem, keyPrjData)
         keyPrjData = json.dumps(keyPrjData)
         taskData = json.dumps(keyTaskData)
-        extraJobData = json.dumps(self.taskManagerWdg.collectExtraJobData(selectedItem))
+        extraJobData = json.dumps(self.taskManager.collectExtraJobData(selectedItem))
 
         # soft = '_nuke' if keyTaskData.get("task") == "comp" else 'houdini'
         soft = '_nuke' if keyTaskData.get("task") == compProcess else 'houdini'

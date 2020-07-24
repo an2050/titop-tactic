@@ -14,7 +14,7 @@ from UI.UserTaskManager.wdg_TreeTaskList import treeWidgetTaskList, treeWidgetTa
 # from UI.UserTaskManager.wdg_Comments.tableCommentList import TableCommentList
 from UI.UserTaskManager.wdg_Comments.CommentBlockWidget import CommentBlockWidget
 
-from UI.UserTaskManager.utils import itemsUtils
+# from UI.UserTaskManager.utils import itemsUtils
 
 from _lib import configUtils
 from _lib.tactic_lib import tacticServerData, tacticDataProcess
@@ -98,7 +98,7 @@ class UserTaskWidget(QWidget):
         self.refreshButton.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
 
         # ======================= UTILS ===============================
-        self.itemsUtils = itemsUtils.ItemsUtils(self)
+        # self.itemsUtils = itemsUtils.ItemsUtils(self)
 
         # ======================= CONNECTS ===============================
         self.userButton.clicked.connect(self.changeUser)
@@ -134,13 +134,13 @@ class UserTaskWidget(QWidget):
 
 # ====================================================
 # ====================================================
-        self.activeButtons = activeButtons.activeButtonsTM(self)
+        self.activeButtons = activeButtons.activeButtonsTM(self, self.treeWidget)
         self.lay_rightVertical.addLayout(self.activeButtons.lay_activeButtons)
 
-        self.rvButtons = rvButtons.rvButtonsTM(self)
+        self.rvButtons = rvButtons.rvButtonsTM(self, self.treeWidget)
         self.lay_rightVertical.addLayout(self.rvButtons.lay_rvButtons)
 
-        self.commentBlock = CommentBlockWidget(self)
+        self.commentBlock = CommentBlockWidget(self, self.treeWidget)
         self.lay_rightVertical.addLayout(self.commentBlock.lay_main)
 
 # ====================================================
@@ -155,26 +155,14 @@ class UserTaskWidget(QWidget):
 # ========================================================================================
 
     def initializeWidgetData(self):
-        # if self.userServerCore.server:
-        # self.userNameField.setText(self.userServerCore.userName)
 
         self.userButton.setText(self.userServerCore.userName + " (" + self.userFunction + ")")
-        
-        # self.setupConnects()
-        # self.setupLayuts()
 
         self.settProjectList_comboBox()
         self.setStatusList_comboBox()
         self.refreshUserTaskData()
         self.setStatusList_comboBox()
         self.commentBlock.server = self.userServerCore.server
-
-
-    # def getServerIp(self):
-    #     configData = configUtils.loadConfigData(tacticConfigFile)
-    #     if configData is None:
-    #         return ""
-    #     return configUtils.loadConfigData(tacticConfigFile).get("serverIp")
 
 # ===========Fill Project & Status drop down lists =======================================
     def settProjectList_comboBox(self):
@@ -188,17 +176,8 @@ class UserTaskWidget(QWidget):
         [self.project_comboBox.addItem(prjItem.get('title'), prjItem.get('code')) for prjItem in prjList]
 
         self.currentProject = {"title": self.project_comboBox.currentText(), "code": self.project_comboBox.currentData()}
-        # print(self.currentProject)
-        # print(self.project_comboBox.currentData())
-
+        self.userServerCore.server.set_project(self.currentProject.get('code'))
         self.project_comboBox.blockSignals(False)
-        #     self.project_comboBox.addItems(["no connection to server"])
-        # else:
-        # prjList = [(prj.get('title'), prj.get('__search_key__')) for prj in prjList]
-        # print(prjList)
-        # self.project_comboBox.addItems(prjList)
-        # self.project = self.project_comboBox.currentText()
-
 
     def setStatusList_comboBox(self):
         self.filterStatus_comboBox.blockSignals(True)
@@ -223,6 +202,7 @@ class UserTaskWidget(QWidget):
 
     def changedProject_dorpList(self):
         self.currentProject = {"title": self.project_comboBox.currentText(), "code": self.project_comboBox.currentData()}
+        self.userServerCore.server.set_project(self.currentProject.get('code'))
         self.refreshUserTaskData()
 
         configData = configUtils.loadConfigData(taskManagerConfigFile)
@@ -357,11 +337,6 @@ if __name__ == "__main__":
     userServerCore = tacticServerData.userServerCore()
     if userServerCore.connectToServer():
         taskManager = UserTaskWidget(userServerCore)
-    # taskManager = UserTaskWidget()
-    # if taskManager.setConnection():
-    # if taskManager.userServerCore.connected:
-        # taskManager.initializeWidgetData()
-        # taskManager.initializeWidgets()
         taskManager.show()
 
     app.exec_()

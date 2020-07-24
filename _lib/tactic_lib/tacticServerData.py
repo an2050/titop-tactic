@@ -96,9 +96,7 @@ class userServerCore:
                 print(textErr)
         return True
 
-
     def resetProjectData(self, prj_code, isTaskData):
-        # if self.connected:
         if isTaskData:
             self.taskData = self.__getTaskData(prj_code, False)
         else:

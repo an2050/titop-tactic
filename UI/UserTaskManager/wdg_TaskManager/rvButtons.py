@@ -3,11 +3,12 @@ from UI.UserTaskManager.utils import rvPlayerUtils
 
 class rvButtonsTM():
 
-    def __init__(self, taskManagerWdg):
-        self.taskManagerWdg = taskManagerWdg
-        self.project = self.taskManagerWdg.currentProject
+    def __init__(self, taskManager, treeWidget):
+        self.taskManager = taskManager
+        self.treeWidget = treeWidget
+        self.project = self.taskManager.currentProject
 
-        self.itemsUtils = self.taskManagerWdg.itemsUtils
+        self.itemUtils = self.treeWidget.itemUtils
 
         self.lay_rvButtons = QVBoxLayout()
 
@@ -31,25 +32,25 @@ class rvButtonsTM():
         self.lay_rvButtons.addWidget(self.watchPreviewButton)
 
     def getProject(self):
-        project = self.taskManagerWdg.currentProject.get('code')
+        project = self.taskManager.currentProject.get('code')
         return project
 
     def watchPrm(self):
-        selectectedItems = self.itemsUtils.getSelected_shotItems()
+        selectectedItems = self.itemUtils.getSelected_shotItems()
         rvPlayerUtils.watchPrm(self.getProject(), selectectedItems)
 
     def watchDailies(self):
-        selectectedItems = self.itemsUtils.getSelected_shotItems()
+        selectectedItems = self.itemUtils.getSelected_shotItems()
         rvPlayerUtils.watchDailies(self.getProject(), selectectedItems)
 
     def watchHires(self):
-        selectectedItems = self.itemsUtils.getSelected_shotItems()
+        selectectedItems = self.itemUtils.getSelected_shotItems()
         rvPlayerUtils.watchHires(self.getProject(), selectectedItems)
 
     def watchSRC(self):
-        selectectedItems = self.itemsUtils.getSelected_shotItems()
+        selectectedItems = self.itemUtils.getSelected_shotItems()
         rvPlayerUtils.watchSRC(self.getProject(), selectectedItems)
 
     def watchPreview(self):
-        selectectedItem = self.itemsUtils.getSelected_ProcessItem()
+        selectectedItem = self.itemUtils.getSelected_ProcessItem()
         rvPlayerUtils.watchPreview(self.getProject(), selectectedItem)

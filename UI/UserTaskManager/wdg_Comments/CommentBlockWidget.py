@@ -12,8 +12,9 @@ from .textCommentDialog import TextCommentDialg
 
 class CommentBlockWidget(QWidget):
 
-    def __init__(self, taskManagerWdg):
+    def __init__(self, taskManagerWdg, treeWidget):
         self.taskManagerWdg = taskManagerWdg
+        self.treeWidget = treeWidget
         self.server = None
         self.selectedCommentItem = None
         # self.selectedTaskItem = None
@@ -23,7 +24,7 @@ class CommentBlockWidget(QWidget):
         # ======================= WIDGETS ===============================
         self.tableCommentList = TableCommentList(self, self.taskManagerWdg)
         self.descriptionField = DescriptionFieldWidget(self.taskManagerWdg)
-        self.textCommentDialog = TextCommentDialg(self, taskManagerWdg)
+        self.textCommentDialog = TextCommentDialg(self, taskManagerWdg, treeWidget)
         self.activeButtons = ActiveButtons(self, self.taskManagerWdg, self.textCommentDialog, self.tableCommentList)
 
         # ======================= CONNECTS ===============================
