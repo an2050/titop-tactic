@@ -58,23 +58,40 @@ def createSthpwUserFile(user):
     
     # os.remove(tacticTicket)
 
+
 # Search key ========================
-def getTaskElementBySearchKey(data, searchKey):
-    return __runTaskDataSearchKey(data, searchKey)
+def getTaskElementBySearchField(data, field, value):
+    return __runTaskDataSearchField(data, field, value)
 
 
-def __runTaskDataSearchKey(data, searchKey):
+def __runTaskDataSearchField(data, field, value):
     for element in data:
-        if element['__search_key__'] == searchKey:
+        if element.get(field) == value:
             return element
 
         elif element.get('children') is not None:
-            element = __runTaskDataSearchKey(element['children'], searchKey)
+            element = __runTaskDataSearchField(element['children'], field, value)
             if element is not None:
                 return element
         else:
             element = None
     return element
+
+# def getTaskElementBySearchKey(data, searchKey):
+#     return __runTaskDataSearchKey(data, searchKey)
+
+# def __runTaskDataSearchKey(data, searchKey):
+#     for element in data:
+#         if element['__search_key__'] == searchKey:
+#             return element
+
+#         elif element.get('children') is not None:
+#             element = __runTaskDataSearchKey(element['children'], searchKey)
+#             if element is not None:
+#                 return element
+#         else:
+#             element = None
+#     return element
 # =======================
 
 
@@ -127,7 +144,8 @@ def getStatusColor(pipelineData, prj, task, status):
 def getNotesElement(elementSKey, taskData, notesData):
 
     note = []
-    element = getTaskElementBySearchKey(taskData, elementSKey)
+    element = getTaskElementBySearchField(taskData, "__search_key__", elementSKey)
+    # element = getTaskElementBySearchKey(taskData, elementSKey)
     keys = element.keys()
 
     if "children" in keys:
@@ -136,8 +154,15 @@ def getNotesElement(elementSKey, taskData, notesData):
         note = filterElementsData(notesData, filters=[("search_code", code)])
 
     elif "process" in keys:
-        parentSKey = element.get('parent_search_key')
-        parentElement = getTaskElementBySearchKey(taskData, parentSKey)
+
+        parentCode = element.get('search_code')
+        # parentSKey = element.get('parent_search_key')
+        parentElement = getTaskElementBySearchField(taskData, field="code", value=parentCode)
+        # parentElement = getTaskElementBySearchKey(taskData, parentSKey)
+
+        # print("PARENT CODE = ", parentCode)
+        # print("PARENT ELEMENT = ", parentElement)
+        # print("TASK DATA = ", taskData)
 
         code = filterElementsData([parentElement], fields=["code"])[0]
         task = filterElementsData([element], fields=["process"])[0]

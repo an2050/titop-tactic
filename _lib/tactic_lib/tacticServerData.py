@@ -17,11 +17,11 @@ from _lib import configUtils
 tacticKeyElements = configUtils.tacticKeyElements
 tacticAssetElement = configUtils.tacticAssetElement
 
-episodColumns = ["__search_key__", "search_code", "description", "name"]
-shotColumns = ["__search_key__", "search_code", "episodes_code", "description", "name"]
-assetColumns = ["__search_key__", "search_code", "episodes_code", "description", "name"]
-taskColums = ["assigned", "__search_key__", "search_code", "description", "status", "process"]
-userColumns = ["code", "login", "department", "function", "login_groups", "__search_key__"]
+episodColumns = ["code", "__search_key__", "search_code", "description", "name"]
+shotColumns = ["code", "__search_key__", "search_code", "description", "name", "episodes_code"]
+assetColumns = ["code", "__search_key__", "search_code", "description", "name", "episodes_code"]
+taskColums = ["code", "__search_key__", "search_code", "assigned", "description", "status", "process"]
+userColumns = ["code", "__search_key__", "login", "department", "function", "login_groups"]
 
 class userServerCore:
     def __init__(self):
@@ -97,6 +97,7 @@ class userServerCore:
         return True
 
     def resetProjectData(self, prj_code, isTaskData):
+        self.server.set_project(prj_code)
         if isTaskData:
             self.taskData = self.__getTaskData(prj_code, False)
         else:
@@ -108,6 +109,7 @@ class userServerCore:
         # print(self.pipelineData)
 
     def refreshNotesData(self, prj_code):
+        self.server.set_project(prj_code)
         self.notesData = self.__getNotesData(prj_code)
         self.snapshotNotesData = self.__getSnapshotNotesData(prj_code)
 
@@ -149,16 +151,16 @@ class userServerCore:
         return watchFilePaths
 
 # =================== read server data ======================================
+# ============================= GET ALL DATA ==============================================
     def __getAllProjectData(self, prj_code, readCache=False):
-        print("mainProject === ", self.mainProject)
-        print("prj_code = ", prj_code)
-        print("itemName === ", tacticKeyElements.get('episode'))
-        epiSkey = self.getSearchType(self.mainProject, tacticKeyElements.get('episode'), prj_code)
-        print(epiSkey)
+        # print("mainProject === ", self.mainProject)
+        # print("prj_code = ", prj_code)
+        # print("itemName === ", tacticKeyElements.get('episode'))
+        epiSkey = self.getSearchType(tacticKeyElements.get('episode'), prj_code, self.mainProject)
         episodes = self.server.query(epiSkey, columns=episodColumns)
         # print(episodes)
 
-        assetSkey = self.getSearchType(self.mainProject, tacticAssetElement.get('asset'), prj_code)
+        assetSkey = self.getSearchType(tacticAssetElement.get('asset'), prj_code, self.mainProject)
         assets = self.server.query(assetSkey)
         # print(assets)
 
@@ -175,10 +177,10 @@ class userServerCore:
         return episodes
 
     def __getEpisodChildren(self, prj_code, episodSkey):
-        assetSkey = self.getSearchType(self.mainProject, tacticAssetElement.get('asset'), prj_code)
+        assetSkey = self.getSearchType(tacticAssetElement.get('asset'), prj_code, self.mainProject)
         assets = self.server.query(assetSkey, parent_key=episodSkey, columns=shotColumns)
 
-        shotSkey = self.getSearchType(self.mainProject, tacticKeyElements.get('shot'), prj_code)
+        shotSkey = self.getSearchType(tacticKeyElements.get('shot'), prj_code, self.mainProject)
         shots = self.server.query(shotSkey, parent_key=episodSkey, columns=shotColumns)
         episodChildren = assets + shots
 
@@ -190,22 +192,17 @@ class userServerCore:
         processData = self.server.query("sthpw/task", parent_key=itemSkey, columns=taskColums)
         return processData
 
-
-
-
-
-
+# ============================= GET TASK DATA ==============================================
     def __getTaskData(self, prj_code, readCache=False):
         if readCache:
             return tacticDataProcess.readDiskCache(tacticDataProcess.tacticTaskFileCache)
         else:
             userSearchKey = self.server.build_search_key("sthpw/login", self.userName)
             try:
-                taskList = self.server.query("sthpw/task", [("project_code", prj_code)], parent_key=userSearchKey)
+                taskList = self.server.query("sthpw/task", [("project_code", prj_code)], columns=taskColums, parent_key=userSearchKey)
             except:
-                print("No have premission for prject '{}'".format(self.project))
+                print("No have premission for prject '{}'".format(prj_code))
                 return None
-
             return self.__collectTaskData(taskList)
 
     def __collectTaskData(self, childrenList):

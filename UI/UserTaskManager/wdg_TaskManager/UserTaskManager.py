@@ -4,12 +4,12 @@ import sys
 sys.path = list(set(sys.path + [os.path.join(os.environ['CGPIPELINE'])]))
 
 from pathlib import Path
-import getpass
+# import getpass
 
 from PySide2.QtWidgets import *
 from PySide2.QtCore import Qt
 
-from UI.UserTaskManager.wdg_TreeTaskList import treeWidgetTaskList, treeWidgetTask_ExtraList
+from UI.UserTaskManager.wdg_TreeTaskList import treeTaskList, treeTaskList_supervisor
 # from UI.UserTaskManager.wdg_TreeTaskList.treeWidgetTaskList import TreeTaskList
 # from UI.UserTaskManager.wdg_Comments.tableCommentList import TableCommentList
 from UI.UserTaskManager.wdg_Comments.CommentBlockWidget import CommentBlockWidget
@@ -41,7 +41,7 @@ class UserTaskWidget(QWidget):
         super(UserTaskWidget, self).__init__(parent)
 
         self.userServerCore = userServerCore
-        self.userFunction = userServerCore.userData[0].get('function')
+        # self.userFunction = userServerCore.userData[0].get('function')
 
         self.currentProject = {}
 
@@ -60,10 +60,11 @@ class UserTaskWidget(QWidget):
 
         # ======================= WIDGETS ===============================
         # - tree task widget
-        if self.userFunction == 'Artist':
-            self.treeWidget = treeWidgetTaskList.TreeTaskList(self)
-        else:
-            self.treeWidget = treeWidgetTask_ExtraList.TreeTaskList(self)
+        # if self.userFunction == 'Artist':
+        #     self.treeWidget = treeTaskList.TreeTaskList(self)
+        # else:
+        #     self.treeWidget = treeTaskList_supervisor.TreeTaskList(self)
+        self.setTreeTaskWidget()
 
 
         self.userLable = QLabel(self)
@@ -154,7 +155,25 @@ class UserTaskWidget(QWidget):
 
 # ========================================================================================
 
+    def setTreeTaskWidget(self):
+        self.userFunction = userServerCore.userData[0].get('function')
+
+        try:
+            self.treeWidget.close()
+            del self.treeWidget
+        except AttributeError:
+            pass
+
+        if self.userFunction == 'Artist':
+            self.treeWidget = treeTaskList.TreeTaskList(self)
+        else:
+            self.treeWidget = treeTaskList_supervisor.TreeTaskList_supervisor(self)
+
+        # self.treeWidget.show()
+        self.lay_leftVertical.addWidget(self.treeWidget)
+
     def initializeWidgetData(self):
+        # userFunction = userServerCore.userData[0].get('function')
 
         self.userButton.setText(self.userServerCore.userName + " (" + self.userFunction + ")")
 
@@ -197,12 +216,14 @@ class UserTaskWidget(QWidget):
 
 # ===================== Connects ==========================
     def changeUser(self):
-        self.userServerCore.connectToServer(True)
+        self.userServerCore.connectToServer(resetTicket=True)
+        self.userFunction = userServerCore.userData[0].get('function')
+        self.setTreeTaskWidget()
         self.initializeWidgetData()
 
     def changedProject_dorpList(self):
         self.currentProject = {"title": self.project_comboBox.currentText(), "code": self.project_comboBox.currentData()}
-        self.userServerCore.server.set_project(self.currentProject.get('code'))
+        # self.userServerCore.server.set_project(self.currentProject.get('code'))
         self.refreshUserTaskData()
 
         configData = configUtils.loadConfigData(taskManagerConfigFile)
@@ -212,7 +233,8 @@ class UserTaskWidget(QWidget):
     def treeItemChanged(self, current, previous):
         if current is None:
             return None
-        elementData = tacticDataProcess.getTaskElementBySearchKey(self.userServerCore.taskData, current.data(0, Qt.UserRole))
+        elementData = tacticDataProcess.getTaskElementBySearchField(self.userServerCore.taskData, "__search_key__", current.data(0, Qt.UserRole))
+        # elementData = tacticDataProcess.getTaskElementBySearchKey(self.userServerCore.taskData, current.data(0, Qt.UserRole))
         description_lable = tacticDataProcess.filterElementsData([elementData], fields=["description"])
         # self.description_lable.setText(description_lable[0]['description'])
 

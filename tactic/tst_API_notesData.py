@@ -81,10 +81,16 @@ projects = filter(lambda x: x.get('code') not in ["sthpw", "admin"], projects)
 def getNoteData():
     filters = [("project_code", "project_01")]
     fields = ["search_code", "code", "process", "note", "login", "timestamp"]
-    notesData = server.query("sthpw/note", filters)
+    notesData = server.query("sthpw/note", filters, fields)
     return notesData
 
+def getTaskData():
+    # filters = [("project_code", "project_01")]
+    # fields = ["search_code", "code", "process", "note", "login", "timestamp"]
+    taskData = server.query("sthpw/task")
+    return taskData
 
-print(getNoteData())
+
+print(getTaskData())
 
 

@@ -1,6 +1,6 @@
 # import os
 import re
-
+from pathlib import Path
 from PySide2.QtWidgets import *
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QCursor, QColor
@@ -9,11 +9,9 @@ from _lib import configUtils
 
 from _lib.tactic_lib import tacticDataProcess
 
-# from .itemUtils import ItemUtils
 from . import itemUtils
 
-# styleCSS = os.path.join(os.path.abspath("../css"), "style.css")
-
+taskManagerConfigFile = Path(__file__).parent.parent / "config.json"
 
 class TreeTaskList(QTreeWidget):
 
@@ -23,7 +21,7 @@ class TreeTaskList(QTreeWidget):
         self.project = ""
         self.taskData = []
         self.pipelineData = []
-        self.taskManagerConfigFile = ""
+        # taskManagerConfigFile = ""
         # self.styleCSS = ""
         self.treeIndexItem = []
 
@@ -53,7 +51,7 @@ class TreeTaskList(QTreeWidget):
             self.addTreeItem(data)
         self.sortItems(0, Qt.AscendingOrder)
 
-        isExpanded = configUtils.loadConfigData(self.taskManagerConfigFile).get("treeExpand")
+        isExpanded = configUtils.loadConfigData(taskManagerConfigFile).get("treeExpand")
         if isExpanded:
             self.expandAllTree()
         else:
@@ -165,9 +163,9 @@ class TreeTaskList(QTreeWidget):
                 self.expandAllTree(item)
         # self.setSelectedItem()
 
-        configData = configUtils.loadConfigData(self.taskManagerConfigFile)
+        configData = configUtils.loadConfigData(taskManagerConfigFile)
         configData["treeExpand"] = True
-        configUtils.saveConfigData(self.taskManagerConfigFile, configData)
+        configUtils.saveConfigData(taskManagerConfigFile, configData)
 
     def collapseAllTree(self, parent=None):
         if parent is None:
@@ -184,9 +182,9 @@ class TreeTaskList(QTreeWidget):
                 self.collapseAllTree(item)
         # self.setSelectedItem()
 
-        configData = configUtils.loadConfigData(self.taskManagerConfigFile)
+        configData = configUtils.loadConfigData(taskManagerConfigFile)
         configData["treeExpand"] = False
-        configUtils.saveConfigData(self.taskManagerConfigFile, configData)
+        configUtils.saveConfigData(taskManagerConfigFile, configData)
 
     def getTreeIndexItem(self, selectedItem):
         root = self.invisibleRootItem()
