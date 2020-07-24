@@ -30,6 +30,7 @@ def getTicketData():
         data['login'] = re.search(r'login=(.*)\b', text).group(1)
         data['IpAdress'] = re.search(r'server=(.*)\b', text).group(1)
         data['ticket'] = re.search(r'ticket=(.*)\b', text).group(1)
+        data['project'] = re.search(r'project=(.*)\b', text).group(1)
     except AttributeError:
         print("Wrong user ticket file. Ticket not found!")
     return data
@@ -52,8 +53,8 @@ def createSthpwUserFile(user):
     f = open(filePath, "w")
     f.close()
 
-def removeTicket(userName):
-    ticket = getTicketData()
+# def removeTicket(userName):
+#     ticket = getTicketData()
     
     # os.remove(tacticTicket)
 

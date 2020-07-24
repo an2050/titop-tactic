@@ -9,10 +9,10 @@ import getpass
 from PySide2.QtWidgets import *
 from PySide2.QtCore import Qt
 
-from UI.UserTaskManager.wdg_TreeTaskList.treeWidgetTaskList import TreeTaskList
+from UI.UserTaskManager.wdg_TreeTaskList import treeWidgetTaskList, treeWidgetTask_ExtraList
+# from UI.UserTaskManager.wdg_TreeTaskList.treeWidgetTaskList import TreeTaskList
 # from UI.UserTaskManager.wdg_Comments.tableCommentList import TableCommentList
 from UI.UserTaskManager.wdg_Comments.CommentBlockWidget import CommentBlockWidget
-from UI.CredentialWindow import CredentialtWindow
 
 from UI.UserTaskManager.utils import itemsUtils
 
@@ -37,10 +37,12 @@ starterPath = [pythonExe, configUtils.starterPath]
 
 class UserTaskWidget(QWidget):
 
-    def __init__(self, parent=None):
+    def __init__(self, userServerCore, parent=None):
         super(UserTaskWidget, self).__init__(parent)
 
-        self.project = ""
+        self.userServerCore = userServerCore
+        self.userFunction = userServerCore.userData[0].get('function')
+
         self.currentProject = {}
 
         self.resize(1280, 720)
@@ -48,8 +50,8 @@ class UserTaskWidget(QWidget):
         self.setStyleSheet(open(styleCSS).read())
 
         # Layouts
-        lay_main = QHBoxLayout(self)
-        self.setLayout(lay_main)
+        self.lay_main = QHBoxLayout(self)
+        self.setLayout(self.lay_main)
         self.lay_leftVertical = QVBoxLayout()
         self.lay_rightVertical = QVBoxLayout()
         self.lay_upLeftHorizontal = QHBoxLayout()
@@ -58,7 +60,11 @@ class UserTaskWidget(QWidget):
 
         # ======================= WIDGETS ===============================
         # - tree task widget
-        self.treeWidget = TreeTaskList(self)
+        if self.userFunction == 'Artist':
+            self.treeWidget = treeWidgetTaskList.TreeTaskList(self)
+        else:
+            self.treeWidget = treeWidgetTask_ExtraList.TreeTaskList(self)
+
 
         self.userLable = QLabel(self)
         self.userLable.setAlignment(Qt.AlignRight | Qt.AlignCenter)
@@ -107,8 +113,8 @@ class UserTaskWidget(QWidget):
         self.filterStatus_comboBox.currentTextChanged.connect(self.filterStatusProcess)
 
         # ======================= LAYOUT SETUP ===============================
-        lay_main.addLayout(self.lay_leftVertical)
-        lay_main.addLayout(self.lay_rightVertical)
+        self.lay_main.addLayout(self.lay_leftVertical)
+        self.lay_main.addLayout(self.lay_rightVertical)
 
         self.lay_leftVertical.addLayout(self.lay_upLeftHorizontal)
         self.lay_leftVertical.addLayout(self.lay_upLeftHorizontal_2)
@@ -142,24 +148,27 @@ class UserTaskWidget(QWidget):
 
         configUtils.checkAndCreateConfigFile(taskManagerConfigFile)
         self.treeWidget.taskManagerConfigFile = taskManagerConfigFile
-        # self.treeWidget.styleCSS = styleCSS
 
-        # self.setConnection()
 # ========================================================================================
+        self.initializeWidgetData()
 
-    def setConnection(self):
-        self.userServerCore = tacticServerData.userServerCore()
-        self.userServerCore.connectToServer()
+# ========================================================================================
 
     def initializeWidgetData(self):
         # if self.userServerCore.server:
         # self.userNameField.setText(self.userServerCore.userName)
-        self.userButton.setText(self.userServerCore.userName)
+
+        self.userButton.setText(self.userServerCore.userName + " (" + self.userFunction + ")")
+        
+        # self.setupConnects()
+        # self.setupLayuts()
+
         self.settProjectList_comboBox()
         self.setStatusList_comboBox()
         self.refreshUserTaskData()
         self.setStatusList_comboBox()
         self.commentBlock.server = self.userServerCore.server
+
 
     # def getServerIp(self):
     #     configData = configUtils.loadConfigData(tacticConfigFile)
@@ -267,7 +276,8 @@ class UserTaskWidget(QWidget):
         self.setStatusList_comboBox()
 
     def refreshUserTaskData(self, resetFilter=False):
-        self.userServerCore.resetProjectData(self.currentProject.get('code'))
+        isTaskData = self.userFunction == "Artist"
+        self.userServerCore.resetProjectData(self.currentProject.get('code'), isTaskData)
         userTaskData = self.userServerCore.taskData
 
         self.treeWidget.pipelineData = self.userServerCore.pipelineData
@@ -344,10 +354,14 @@ if __name__ == "__main__":
     app = QApplication()
     app.setStyle(QStyleFactory.create("Fusion"))
 
-    taskManager = UserTaskWidget()
-    taskManager.setConnection()
-    if taskManager.userServerCore.connected:
-        taskManager.initializeWidgetData()
+    userServerCore = tacticServerData.userServerCore()
+    if userServerCore.connectToServer():
+        taskManager = UserTaskWidget(userServerCore)
+    # taskManager = UserTaskWidget()
+    # if taskManager.setConnection():
+    # if taskManager.userServerCore.connected:
+        # taskManager.initializeWidgetData()
+        # taskManager.initializeWidgets()
         taskManager.show()
 
     app.exec_()

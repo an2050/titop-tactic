@@ -5,7 +5,7 @@ class rvButtonsTM():
 
     def __init__(self, taskManagerWdg):
         self.taskManagerWdg = taskManagerWdg
-        self.project = self.taskManagerWdg.project
+        self.project = self.taskManagerWdg.currentProject
 
         self.itemsUtils = self.taskManagerWdg.itemsUtils
 

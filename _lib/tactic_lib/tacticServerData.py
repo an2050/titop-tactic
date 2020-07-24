@@ -14,25 +14,30 @@ from tactic_client_lib import TacticServerStub
 from tactic_client_lib.tactic_server_stub import TacticApiException
 from _lib import configUtils
 
+tacticKeyElements = configUtils.tacticKeyElements
+tacticAssetElement = configUtils.tacticAssetElement
+
+episodColumns = ["__search_key__", "search_code", "description", "name"]
+shotColumns = ["__search_key__", "search_code", "episodes_code", "description", "name"]
+assetColumns = ["__search_key__", "search_code", "episodes_code", "description", "name"]
+taskColums = ["assigned", "__search_key__", "search_code", "description", "status", "process"]
+userColumns = ["code", "login", "department", "function", "login_groups", "__search_key__"]
+
 class userServerCore:
     def __init__(self):
-        self.serverIp = ""
-        self.userName = ""
-        self.password = ""
-        self.connected = False
         self.server = None
-        # self.project = ""
+        self.connected = False
+        self.IpAdress = ""
+        self.userName = ""
+        self.mainProject = ""
+
+        self.userData = []
         self.taskData = []
         self.pipelineData = []
         self.notesData = []
         self.snapshotNotesData = []
 
         self.projectClms = ["code", "title", "description", "status", "__search_key__"]
-
-        # self.epiColumns = ["__search_key__", "search_code", "description", "name"]
-        # self.shotColumns = ["__search_key__", "search_code", "episodes_code", "description", "name"]
-        # self.assetColumns = ["__search_key__", "search_code", "episodes_code", "description", "name"]
-        # self.taskColums = ["assigned", "__search_key__", "search_code", "description", "status", "process"]
 
     def connectToServer(self, resetTicket=False):
         try:
@@ -52,11 +57,17 @@ class userServerCore:
             if self.setTicket(server) is None:
                 return
 
+        print("Connection successful.")
+
         self.connected = True
         self.server = server
-        self.userName = tacticDataProcess.getTicketData().get('login')
-        self.IpAdress = tacticDataProcess.getTicketData().get('IpAdress')
-        self.ticket = tacticDataProcess.getTicketData().get('ticket')
+        ticketData = tacticDataProcess.getTicketData()
+        self.userName = ticketData.get('login')
+        self.IpAdress = ticketData.get('IpAdress')
+        self.ticket = ticketData.get('ticket')
+        self.mainProject = ticketData.get('project')
+        self.userData = self.__getUserData(self.userName)
+        return True
 
     def setTicket(self, server):
         _input = False
@@ -86,9 +97,13 @@ class userServerCore:
         return True
 
 
-    def resetProjectData(self, prj_code):
+    def resetProjectData(self, prj_code, isTaskData):
         # if self.connected:
-        self.taskData = self.__getTaskData(prj_code, False)
+        if isTaskData:
+            self.taskData = self.__getTaskData(prj_code, False)
+        else:
+            self.taskData = self.__getAllProjectData(prj_code, False)
+
         self.pipelineData = self.__getPipelineData(prj_code)
         self.notesData = self.__getNotesData(prj_code)
         self.snapshotNotesData = self.__getSnapshotNotesData(prj_code)
@@ -107,6 +122,9 @@ class userServerCore:
         # else:
         #     projectData = ['no connection to server']
         return projectData
+
+    def __getUserData(self, userName):
+        return self.server.query("sthpw/login", [('code', userName)], columns=userColumns)
 
     def __getPipelineData(self, prj_code, filters=[], readCache=False):
         filters = [("project_code", prj_code), ("search_type", "sthpw/task")]
@@ -132,37 +150,47 @@ class userServerCore:
         watchFilePaths = [__paths_dict__[key][0] for key in list(__paths_dict__.keys()) if key not in ['web', 'icon']]
         return watchFilePaths
 
-
 # =================== read server data ======================================
+    def __getAllProjectData(self, prj_code, readCache=False):
+        print("mainProject === ", self.mainProject)
+        print("prj_code = ", prj_code)
+        print("itemName === ", tacticKeyElements.get('episode'))
+        epiSkey = self.getSearchType(self.mainProject, tacticKeyElements.get('episode'), prj_code)
+        print(epiSkey)
+        episodes = self.server.query(epiSkey, columns=episodColumns)
+        # print(episodes)
 
+        assetSkey = self.getSearchType(self.mainProject, tacticAssetElement.get('asset'), prj_code)
+        assets = self.server.query(assetSkey)
+        # print(assets)
 
-    # def __getTaskData(self, readCache=False):
-    #     episodes = self.server.query("main/episodes", columns=self.epiColumns)
-    #     assets = self.server.query("main/asset", columns=self.assetColumns)
-    #     mainAsstes = [asset for asset in assets if not asset.get('episodes_code')] 
-    #     print('+++++++++', mainAsstes)
+        episodeCode = tacticKeyElements.get('episode') + "_code"
+        mainAsstes = [asset for asset in assets if not asset.get(episodeCode)]
+        # print('+++++++++', mainAsstes)
 
     #     # episodes += [asset for asset in assets if not asset.get('episodes_code')]
-    #     for episod in episodes:
-    #         episod['children'] = self.getEpisodChildren(episod.get('__search_key__'))
-    #     for asset in mainAsstes:
-    #         asset['children'] = self.getTaskData(asset.get('__search_key__'))
-    #     episodes += mainAsstes
-    #     return episodes
+        for episod in episodes:
+            episod['children'] = self.__getEpisodChildren(prj_code, episod.get('__search_key__'))
+        for asset in mainAsstes:
+            asset['children'] = self.__getProcessData(asset.get('__search_key__'))
+        episodes += mainAsstes
+        return episodes
 
-    # def getEpisodChildren(self, sKey):
-    #     assets = self.server.query("main/asset", parent_key=sKey, columns=self.shotColumns)
-    #     shots = self.server.query("default/shots", parent_key=sKey, columns=self.shotColumns)
-    #     episodChildren = assets + shots
+    def __getEpisodChildren(self, prj_code, episodSkey):
+        assetSkey = self.getSearchType(self.mainProject, tacticAssetElement.get('asset'), prj_code)
+        assets = self.server.query(assetSkey, parent_key=episodSkey, columns=shotColumns)
 
-    #     for child in episodChildren:
-    #         child['children'] = self.getTaskData(child.get('__search_key__'))
-    #     return episodChildren
+        shotSkey = self.getSearchType(self.mainProject, tacticKeyElements.get('shot'), prj_code)
+        shots = self.server.query(shotSkey, parent_key=episodSkey, columns=shotColumns)
+        episodChildren = assets + shots
 
+        for child in episodChildren:
+            child['children'] = self.__getProcessData(child.get('__search_key__'))
+        return episodChildren
 
-    # def getTaskData(self, sKey):
-    #     taskData = self.server.query("sthpw/task", parent_key=sKey, columns=self.taskColums)
-    #     return taskData
+    def __getProcessData(self, itemSkey):
+        processData = self.server.query("sthpw/task", parent_key=itemSkey, columns=taskColums)
+        return processData
 
 
 
@@ -221,6 +249,10 @@ class userServerCore:
             tacticDataProcess.saveDiskCache(data, tacticDataProcess.tacticTaskFileCache)
             return(data)
 # ======================================================================
+
+    def getSearchType(self, itemName, prj_code, mainPrj="sthpw"):
+        serachType = self.server.build_search_type("/".join([mainPrj, itemName]), prj_code)
+        return serachType
 
     def updateTaskData(self, searchKey, data):
         if self.connected:
