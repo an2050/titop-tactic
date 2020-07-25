@@ -53,11 +53,6 @@ def createSthpwUserFile(user):
     f = open(filePath, "w")
     f.close()
 
-# def removeTicket(userName):
-#     ticket = getTicketData()
-    
-    # os.remove(tacticTicket)
-
 
 # Search key ========================
 def getTaskElementBySearchField(data, field, value):
@@ -76,6 +71,14 @@ def __runTaskDataSearchField(data, field, value):
         else:
             element = None
     return element
+
+
+def getExpression_sObj(sType, field, values):
+    field = "'" + field + "'"
+    values = "'" + "|".join(values) + "'"
+    expElemets = ["@SOBJECT(", sType, "[", field, ", 'in', ", values, "])"]
+    exp = "".join(expElemets)
+    return(exp)
 
 # def getTaskElementBySearchKey(data, searchKey):
 #     return __runTaskDataSearchKey(data, searchKey)

@@ -15,11 +15,14 @@ taskManagerConfigFile = Path(__file__).parent.parent / "config.json"
 
 class TreeTaskList(QTreeWidget):
 
-    def __init__(self, parent=None):
-        super(TreeTaskList, self).__init__(parent)
+    def __init__(self, taskManagerWdg):
+        super(TreeTaskList, self).__init__(taskManagerWdg)
+
+        self.taskManagerWdg = taskManagerWdg
 
         self.project = ""
         self.taskData = []
+        self.allUsers = []
         self.pipelineData = []
         # taskManagerConfigFile = ""
         # self.styleCSS = ""
@@ -27,8 +30,8 @@ class TreeTaskList(QTreeWidget):
 
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
-        self.setColumnCount(2)
-        self.setHeaderLabels(["Task", "Status"])
+        self.setColumnCount(3)
+        self.setHeaderLabels(["Task", "Status", "User"])
         self.setColumnWidth(0, 200)
         self.setColumnWidth(1, 200)
         self.setSortingEnabled(True)
@@ -42,6 +45,9 @@ class TreeTaskList(QTreeWidget):
         self.itemUtils = itemUtils.ItemUtils(self)
 
     def completeTree(self, data, filterItems=False, filterElement=""):
+        self.allUsers = self.taskManagerWdg.userServerCore.allUsers
+        # self.createUsersComboBox(self.taskManagerWdg.userServerCore.allUsers)
+        # print("TREE DATA = ", data)
         self.blockSignals(True)
         self.clear()
         if filterItems:
@@ -60,6 +66,12 @@ class TreeTaskList(QTreeWidget):
         self.setSelectedItem()
         self.blockSignals(False)
 
+    def createUsersComboBox(self):
+        usersData = self.allUsers
+        users_combobox = QComboBox(self)
+        [users_combobox.addItem(user.get('login'), user.get('function')) for user in usersData]
+        return users_combobox
+
     def addTreeItem(self, data, parent=None):
         if parent is None:
             parent = self.invisibleRootItem()
@@ -74,6 +86,8 @@ class TreeTaskList(QTreeWidget):
                 item.setData(0, Qt.UserRole, dataItem.get('__search_key__'))
                 item.setText(0, dataItem['process'])
                 item.setText(1, dataItem['status'])
+                # item.setText(2, dataItem['assigned'])
+
 
                 statusColor = tacticDataProcess.getStatusColor(self.pipelineData, self.project,
                                                                dataItem['process'], dataItem['status'])
@@ -81,6 +95,7 @@ class TreeTaskList(QTreeWidget):
                     item.setForeground(1, QColor(statusColor[0] + "DC" + statusColor[1:]))
 
             parent.addChild(item)
+            self.setItemWidget(item, 2, self.createUsersComboBox())
             item.setExpanded(True)
 
     def addTreeItemFilter(self, data, filterElement, parent=None, haveParent=False):
@@ -119,6 +134,8 @@ class TreeTaskList(QTreeWidget):
                 item.setData(0, Qt.UserRole, dataItem.get('__search_key__'))
                 item.setText(0, dataItem['process'])
                 item.setText(1, dataItem['status'])
+                # item.setText(2, dataItem['assigned'])
+                # self.setItemWidget(item, 1, self.createUsersComboBox())
 
                 statusColor = tacticDataProcess.getStatusColor(self.pipelineData, self.project,
                                                                dataItem['process'], dataItem['status'])

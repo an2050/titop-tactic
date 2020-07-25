@@ -29,8 +29,6 @@ tacticConfigFile = configUtils.tacticConfigFile
 pythonExe = os.path.join(configUtils.pythonDir, "python27", "python.exe")
 starterPath = [pythonExe, configUtils.starterPath]
 
-# sysUserName = getpass.getuser()
-# password = "123"
 
 
 
@@ -41,12 +39,10 @@ class UserTaskWidget(QWidget):
         super(UserTaskWidget, self).__init__(parent)
 
         self.userServerCore = userServerCore
-        # self.userFunction = userServerCore.userData[0].get('function')
-
+        self.userFunction = userServerCore.userData[0].get('function')
         self.currentProject = {}
 
         self.resize(1280, 720)
-
         self.setStyleSheet(open(styleCSS).read())
 
         # Layouts
@@ -59,13 +55,7 @@ class UserTaskWidget(QWidget):
         self.lay_grpBoxVertical = QVBoxLayout()
 
         # ======================= WIDGETS ===============================
-        # - tree task widget
-        # if self.userFunction == 'Artist':
-        #     self.treeWidget = treeTaskList.TreeTaskList(self)
-        # else:
-        #     self.treeWidget = treeTaskList_supervisor.TreeTaskList(self)
         self.setTreeTaskWidget()
-
 
         self.userLable = QLabel(self)
         self.userLable.setAlignment(Qt.AlignRight | Qt.AlignCenter)
@@ -74,9 +64,6 @@ class UserTaskWidget(QWidget):
         # self.userNameField = QLineEdit(self)
         # self.userNameField.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Minimum)
 
-
-
-        # self.userNameField.setText(sysUserName)
         # - filters
         self.filterShotField = QLineEdit(self)
         self.filterShotField.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
@@ -103,7 +90,6 @@ class UserTaskWidget(QWidget):
 
         # ======================= CONNECTS ===============================
         self.userButton.clicked.connect(self.changeUser)
-
         self.treeWidget.currentItemChanged.connect(self.treeItemChanged)
 
         # self.userNameField.editingFinished.connect(self.changedUser_lineEdit)
@@ -156,29 +142,14 @@ class UserTaskWidget(QWidget):
 # ========================================================================================
 
     def setTreeTaskWidget(self):
-        self.userFunction = userServerCore.userData[0].get('function')
-
-        try:
-            self.treeWidget.close()
-            del self.treeWidget
-        except AttributeError:
-            pass
-
         if self.userFunction == 'Artist':
             self.treeWidget = treeTaskList.TreeTaskList(self)
         else:
             self.treeWidget = treeTaskList_supervisor.TreeTaskList_supervisor(self)
 
-        # self.treeWidget.show()
-        self.lay_leftVertical.addWidget(self.treeWidget)
-
     def initializeWidgetData(self):
-        # userFunction = userServerCore.userData[0].get('function')
-
         self.userButton.setText(self.userServerCore.userName + " (" + self.userFunction + ")")
-
         self.settProjectList_comboBox()
-        self.setStatusList_comboBox()
         self.refreshUserTaskData()
         self.setStatusList_comboBox()
         self.commentBlock.server = self.userServerCore.server
@@ -186,16 +157,15 @@ class UserTaskWidget(QWidget):
 # ===========Fill Project & Status drop down lists =======================================
     def settProjectList_comboBox(self):
         self.project_comboBox.blockSignals(True)
+
         projectsData = self.userServerCore.getProjecstData()
         self.clearCombobBoxWidgetList(self.project_comboBox)
-
-        prjList = tacticDataProcess.filterElementsData(projectsData, [("status", None)], fields=["title", "code"])
         activeProject = configUtils.loadConfigData(taskManagerConfigFile).get("activeProject")
-        prjList = sorted(prjList, key=lambda x: x.get('code') != activeProject)
+        prjList = sorted(projectsData, key=lambda x: x.get('code') != activeProject)
         [self.project_comboBox.addItem(prjItem.get('title'), prjItem.get('code')) for prjItem in prjList]
-
         self.currentProject = {"title": self.project_comboBox.currentText(), "code": self.project_comboBox.currentData()}
         self.userServerCore.server.set_project(self.currentProject.get('code'))
+
         self.project_comboBox.blockSignals(False)
 
     def setStatusList_comboBox(self):
@@ -218,7 +188,7 @@ class UserTaskWidget(QWidget):
     def changeUser(self):
         self.userServerCore.connectToServer(resetTicket=True)
         self.userFunction = userServerCore.userData[0].get('function')
-        self.setTreeTaskWidget()
+        # self.setTreeTaskWidget()
         self.initializeWidgetData()
 
     def changedProject_dorpList(self):
@@ -279,6 +249,7 @@ class UserTaskWidget(QWidget):
 
     def refreshUserTaskData(self, resetFilter=False):
         isTaskData = self.userFunction == "Artist"
+        # print("CURRETN PROJECT = ", self.currentProject.get('code'))
         self.userServerCore.resetProjectData(self.currentProject.get('code'), isTaskData)
         userTaskData = self.userServerCore.taskData
 

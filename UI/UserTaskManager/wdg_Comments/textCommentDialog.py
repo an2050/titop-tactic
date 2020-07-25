@@ -66,6 +66,7 @@ class TextCommentDialg(QDialog):
             self.process = process
             self.noteData = self.commentBlockWidget.createNote(shotSkey, text, process)
 
+
         elif self.action == "Update":
             self.noteData = self.commentBlockWidget.updateNote(text)
         else:

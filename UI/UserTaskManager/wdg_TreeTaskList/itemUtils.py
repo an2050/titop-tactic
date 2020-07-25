@@ -7,7 +7,6 @@ from _lib import configUtils
 class ItemUtils(object):
 
     def __init__(self, treeWidget):
-        # self.userTaskWidget = userTaskWidget
         self.treeWidget = treeWidget
         self.tacticElements = configUtils.tacticKeyElements
 

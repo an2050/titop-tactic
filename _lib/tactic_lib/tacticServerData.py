@@ -1,6 +1,8 @@
 import os
 import sys
 # import time
+import xml.etree.ElementTree as ET
+
 from . import tacticDataProcess
 
 from xmlrpc.client import Fault
@@ -17,6 +19,7 @@ from _lib import configUtils
 tacticKeyElements = configUtils.tacticKeyElements
 tacticAssetElement = configUtils.tacticAssetElement
 
+projectColumns = ["code", "title", "description", "status", "__search_key__"]
 episodColumns = ["code", "__search_key__", "search_code", "description", "name"]
 shotColumns = ["code", "__search_key__", "search_code", "description", "name", "episodes_code"]
 assetColumns = ["code", "__search_key__", "search_code", "description", "name", "episodes_code"]
@@ -32,12 +35,13 @@ class userServerCore:
         self.mainProject = ""
 
         self.userData = []
+        self.allUsers = []
         self.taskData = []
         self.pipelineData = []
         self.notesData = []
         self.snapshotNotesData = []
 
-        self.projectClms = ["code", "title", "description", "status", "__search_key__"]
+        # self.projectClms = ["code", "title", "description", "status", "__search_key__"]
 
     def connectToServer(self, resetTicket=False):
         try:
@@ -98,15 +102,26 @@ class userServerCore:
 
     def resetProjectData(self, prj_code, isTaskData):
         self.server.set_project(prj_code)
-        if isTaskData:
-            self.taskData = self.__getTaskData(prj_code, False)
-        else:
-            self.taskData = self.__getAllProjectData(prj_code, False)
+        try:
+            if isTaskData:
+                self.taskData = self.__getTaskData(prj_code, False)
+            else:
+                self.taskData = self.__getAllProjectData(prj_code, False)
+                self.allUsers = self.__getAllProjecUsers(prj_code)
 
-        self.pipelineData = self.__getPipelineData(prj_code)
-        self.notesData = self.__getNotesData(prj_code)
-        self.snapshotNotesData = self.__getSnapshotNotesData(prj_code)
-        # print(self.pipelineData)
+            self.pipelineData = self.__getPipelineData(prj_code)
+            self.notesData = self.__getNotesData(prj_code)
+            self.snapshotNotesData = self.__getSnapshotNotesData(prj_code)
+
+        except Fault as err:
+            print("Premission error: ", err)
+            self.cleanServerData()
+
+    def cleanServerData(self):
+        self.taskData = []
+        self.pipelineData = []
+        self.notesData = []
+        self.snapshotNotesData = []
 
     def refreshNotesData(self, prj_code):
         self.server.set_project(prj_code)
@@ -114,17 +129,43 @@ class userServerCore:
         self.snapshotNotesData = self.__getSnapshotNotesData(prj_code)
 
     def getProjecstData(self, readCache=False):
-        # if self.connected:
-        # print(server.query('sthpw/project', columns=["code"]))
-        projectData = self.server.query("sthpw/project", columns=self.projectClms)
+        projectData = self.server.query("sthpw/project", columns=projectColumns)
         projectData = filter(lambda x: x.get('code') not in ["sthpw", "admin"], projectData)
-            # tacticDataProcess.saveDiskCache(projectData, tacticDataProcess.tacticProjectFileCache)
-        # else:
-        #     projectData = ['no connection to server']
-        return projectData
+        return list(projectData)
 
     def __getUserData(self, userName):
         return self.server.query("sthpw/login", [('code', userName)], columns=userColumns)
+
+    def __getAllProjecUsers(self, prj_code=None):
+        allGroups = self.server.query("sthpw/login_group", columns=["code", "access_rules"])
+
+        # Getting groups that are available for current project
+        prjGrps = []
+        for grp in allGroups:
+            rules_xml = grp.get('access_rules')
+
+            ruleList = list(ET.fromstring(rules_xml))
+            for rule in ruleList:
+                d = rule.attrib
+                if d.get('group') == 'project' and d.get('code') == prj_code and d.get('access') == 'allow':
+                    prjGrps += [grp.get('code')]
+                    break
+
+        # Getting users in this groups 
+        exp_userInGrp = tacticDataProcess.getExpression_sObj('sthpw/login_in_group', 'login_group', prjGrps)
+        userInGrp = self.server.eval(exp_userInGrp)
+        # List of user's codes
+        userCodes = [user.get('login') for user in userInGrp]
+
+        # Getting data for this users
+        exp_rawUserData = tacticDataProcess.getExpression_sObj('sthpw/login', 'login', userCodes)
+        rawUserData = self.server.eval(exp_rawUserData)
+
+        userData = []
+        for user in rawUserData:
+            userData.append(configUtils.filterDictKeys(user, userColumns))
+        return userData
+
 
     def __getPipelineData(self, prj_code, filters=[], readCache=False):
         filters = [("project_code", prj_code), ("search_type", "sthpw/task")]
@@ -198,11 +239,11 @@ class userServerCore:
             return tacticDataProcess.readDiskCache(tacticDataProcess.tacticTaskFileCache)
         else:
             userSearchKey = self.server.build_search_key("sthpw/login", self.userName)
-            try:
-                taskList = self.server.query("sthpw/task", [("project_code", prj_code)], columns=taskColums, parent_key=userSearchKey)
-            except:
-                print("No have premission for prject '{}'".format(prj_code))
-                return None
+            # try:
+            taskList = self.server.query("sthpw/task", [("project_code", prj_code)], columns=taskColums, parent_key=userSearchKey)
+            # except:
+            #     print("No have premission for prject '{}'".format(prj_code))
+            #     return None
             return self.__collectTaskData(taskList)
 
     def __collectTaskData(self, childrenList):
