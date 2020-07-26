@@ -288,9 +288,9 @@ class userServerCore:
         serachType = self.server.build_search_type("/".join([mainPrj, itemName]), prj_code)
         return serachType
 
-    def updateTaskData(self, searchKey, data):
-        if self.connected:
-            self.server.update(searchKey, data)
+    # def updateTaskData(self, searchKey, data):
+    #     if self.connected:
+    #         self.server.update(searchKey, data)
 
 
 if __name__ == "__main__":

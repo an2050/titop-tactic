@@ -20,8 +20,9 @@ from UI.UserTaskManager.utils import treeDataUtils
 from _lib import configUtils
 from _lib.tactic_lib import tacticServerData, tacticDataProcess
 
-import activeButtons
 import rvButtons
+import activeButtons
+# import rvButtons
 
 taskManagerConfigFile = Path(__file__).parent / "config.json"
 styleCSS = Path(__file__).parent.parent.parent / "css" / "style.css"
@@ -123,11 +124,11 @@ class UserTaskWidget(QWidget):
 
 # ====================================================
 # ====================================================
-        self.activeButtons = activeButtons.activeButtonsTM(self, self.treeWidget)
+        self.activeButtons = self.setActiveButtons()
         self.lay_rightVertical.addLayout(self.activeButtons.lay_activeButtons)
 
-        self.rvButtons = rvButtons.rvButtonsTM(self, self.treeWidget)
-        self.lay_rightVertical.addLayout(self.rvButtons.lay_rvButtons)
+        # self.rvButtons = rvButtons.rvButtonsTM(self, self.treeWidget)
+        # self.lay_rightVertical.addLayout(self.rvButtons.lay_rvButtons)
 
         self.commentBlock = CommentBlockWidget(self, self.treeWidget)
         self.lay_rightVertical.addLayout(self.commentBlock.lay_main)
@@ -148,6 +149,12 @@ class UserTaskWidget(QWidget):
             self.treeWidget = treeTaskList.TreeTaskList(self)
         else:
             self.treeWidget = treeTaskList_supervisor.TreeTaskList_supervisor(self)
+
+    def setActiveButtons(self):
+        if self.userFunction == 'Artist':
+            return activeButtons.activeButtons_artist(self, self.treeWidget)
+        else:
+            return activeButtons.activeButtons_supervisor(self, self.treeWidget)
 
     def initializeWidgetData(self):
         self.userButton.setText(self.userServerCore.userName + " (" + self.userFunction + ")")

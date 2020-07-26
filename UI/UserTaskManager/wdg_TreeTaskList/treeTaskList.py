@@ -214,6 +214,10 @@ class TreeTaskList(QTreeWidget):
         newUser = cmbBoxWidget.currentText()
         newUser = "" if newUser == self.noUser else newUser
         tacticPostUtils.updateSobject(self.taskManagerWdg.userServerCore.server, taskSkey, {"assigned": newUser})
+        if newUser:
+            tacticPostUtils.updateSobject(self.taskManagerWdg.userServerCore.server, taskSkey, {"status": "Ready to start"})
+        else:
+            tacticPostUtils.updateSobject(self.taskManagerWdg.userServerCore.server, taskSkey, {"status": "Assignment"})
 
 
 
