@@ -31,7 +31,7 @@ class activeButtonsTM():
         # self.taskManager.userServerCore.updateTaskData(searchKey, data)
         tacticPostUtils.updateSobject(self.taskManager.userServerCore.server, searchKey, data)
         if refresh:
-            self.taskManager.refreshUserTaskData()
+            self.taskManager.refreshTaskData()
 
     def autoInProgressStatus(self, selectedItem):
         itemStatus = selectedItem.text(1)
@@ -45,7 +45,7 @@ class activeButtonsTM():
             if confirm == QMessageBox.Yes:
                 self.setInProgress(selectedItem)
         else:
-            self.taskManager.refreshUserTaskData()
+            self.taskManager.refreshTaskData()
 
     def runSoft(self):
         selectedItem = self.itemUtils.getSelected_ProcessItem()
