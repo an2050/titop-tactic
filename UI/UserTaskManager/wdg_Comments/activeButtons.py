@@ -62,10 +62,13 @@ class ActiveButtons():
         parentSkey = commentItem.data(Qt.UserRole).get('parentSkey')
 
         if parentSkey.find('task') >= 0:
-            shotSkey = tacticDataProcess.getTaskElementBySearchKey(self.taskManagerWdg.userServerCore.taskData, parentSkey).get('parent_search_key')
-            shotName = shotSkey = tacticDataProcess.getTaskElementBySearchKey(self.taskManagerWdg.userServerCore.taskData, shotSkey).get('name')
+            # print(self.taskManagerWdg.userServerCore.taskData)
+            shotCode = tacticDataProcess.getTaskElementBySearchField(self.taskManagerWdg.userServerCore.taskData, "__search_key__", parentSkey).get('search_code')
+            # shotSkey = tacticDataProcess.getTaskElementBySearchField(self.taskManagerWdg.userServerCore.taskData, "__search_key__", parentSkey).get('search_code')
+            shotName = shotSkey = tacticDataProcess.getTaskElementBySearchField(self.taskManagerWdg.userServerCore.taskData,  "code", shotCode).get('name')
+            # shotName = shotSkey = tacticDataProcess.getTaskElementBySearchField(self.taskManagerWdg.userServerCore.taskData,  "__search_key__", shotSkey).get('name')
         else:
-            shotName = tacticDataProcess.getTaskElementBySearchKey(self.taskManagerWdg.userServerCore.taskData, parentSkey).get('name')
+            shotName = tacticDataProcess.getTaskElementBySearchField(self.taskManagerWdg.userServerCore.taskData, "__search_key__", parentSkey).get('name')
 
         shotItem = self.taskManagerWdg.treeWidget.findItems(shotName, Qt.MatchExactly | Qt.MatchRecursive)[0]
         shotChildren = [shotItem.child(idx) for idx in range(shotItem.childCount())]

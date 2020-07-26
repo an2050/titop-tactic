@@ -208,8 +208,6 @@ class userServerCore:
         episodeCode = tacticKeyElements.get('episode') + "_code"
         mainAsstes = [asset for asset in assets if not asset.get(episodeCode)]
         # print('+++++++++', mainAsstes)
-
-    #     # episodes += [asset for asset in assets if not asset.get('episodes_code')]
         for episod in episodes:
             episod['children'] = self.__getEpisodChildren(prj_code, episod.get('__search_key__'))
         for asset in mainAsstes:

@@ -13,6 +13,7 @@ from UI.UserTaskManager.wdg_TreeTaskList import treeTaskList, treeTaskList_super
 # from UI.UserTaskManager.wdg_TreeTaskList.treeWidgetTaskList import TreeTaskList
 # from UI.UserTaskManager.wdg_Comments.tableCommentList import TableCommentList
 from UI.UserTaskManager.wdg_Comments.CommentBlockWidget import CommentBlockWidget
+from UI.UserTaskManager.utils import treeDataUtils
 
 # from UI.UserTaskManager.utils import itemsUtils
 
@@ -69,6 +70,7 @@ class UserTaskWidget(QWidget):
         self.filterShotField.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         self.filterStatus_comboBox = QComboBox(self)
         self.filterStatus_comboBox.setMinimumSize(150, 25)
+        # self.filterStatus_comboBox.setFocusPolicy(Qt.StrongFocus)
         # -
         self.filterShot_Lable = QLabel(self)
         self.filterShot_Lable.setText("Shot:")
@@ -157,7 +159,6 @@ class UserTaskWidget(QWidget):
 # ===========Fill Project & Status drop down lists =======================================
     def settProjectList_comboBox(self):
         self.project_comboBox.blockSignals(True)
-
         projectsData = self.userServerCore.getProjecstData()
         self.clearCombobBoxWidgetList(self.project_comboBox)
         activeProject = configUtils.loadConfigData(taskManagerConfigFile).get("activeProject")
@@ -165,7 +166,6 @@ class UserTaskWidget(QWidget):
         [self.project_comboBox.addItem(prjItem.get('title'), prjItem.get('code')) for prjItem in prjList]
         self.currentProject = {"title": self.project_comboBox.currentText(), "code": self.project_comboBox.currentData()}
         self.userServerCore.server.set_project(self.currentProject.get('code'))
-
         self.project_comboBox.blockSignals(False)
 
     def setStatusList_comboBox(self):
@@ -182,20 +182,22 @@ class UserTaskWidget(QWidget):
             elif element.get("status") is not None:
                 statusList += [element['status']]
         return list(set(statusList))
-# ==============================================================
 
 # ===================== Connects ==========================
+    def clearCombobBoxWidgetList(self, comboBoxWidget):
+        prjCount = comboBoxWidget.count()
+        while prjCount > 0:
+            comboBoxWidget.removeItem(0)
+            prjCount -= 1
+
     def changeUser(self):
         self.userServerCore.connectToServer(resetTicket=True)
         self.userFunction = userServerCore.userData[0].get('function')
-        # self.setTreeTaskWidget()
         self.initializeWidgetData()
 
     def changedProject_dorpList(self):
         self.currentProject = {"title": self.project_comboBox.currentText(), "code": self.project_comboBox.currentData()}
-        # self.userServerCore.server.set_project(self.currentProject.get('code'))
         self.refreshUserTaskData()
-
         configData = configUtils.loadConfigData(taskManagerConfigFile)
         configData["activeProject"] = self.currentProject.get('code')
         configUtils.saveConfigData(taskManagerConfigFile, configData)
@@ -215,24 +217,12 @@ class UserTaskWidget(QWidget):
         # self.refreshCommentData()
         # self.commentBlock.clearTextDialogField()
         self.treeWidget.treeIndexItem = self.treeWidget.getTreeIndexItem(current)
-# ==============================================================
+# ===========================================================
 
     def completeNoteList(self, selectedItem):
         itemSkey = selectedItem.data(0, Qt.UserRole)
         note = tacticDataProcess.getNotesElement(itemSkey, self.userServerCore.taskData, self.userServerCore.notesData)
         self.commentBlock.completeTableList(note, itemSkey)
-
-    def clearCombobBoxWidgetList(self, comboBoxWidget):
-        prjCount = comboBoxWidget.count()
-        while prjCount > 0:
-            comboBoxWidget.removeItem(0)
-            prjCount -= 1
-
-    # def completeTaskTree():
-    #     self.treeWidget.completeTree(self.userServerCore.taskData)
-
-    # def refreshPipelineData(self):
-    #     self.filterTreeByStatus()
 
     def refreshCommentData(self):
         self.userServerCore.refreshNotesData(self.currentProject.get('code'))
@@ -244,8 +234,8 @@ class UserTaskWidget(QWidget):
         self.completeNoteList(selectedItem)
 
     def refreshTaskDataButton(self):
-        self.refreshUserTaskData(True)
         self.setStatusList_comboBox()
+        self.refreshUserTaskData(True)
 
     def refreshUserTaskData(self, resetFilter=False):
         isTaskData = self.userFunction == "Artist"
@@ -260,49 +250,88 @@ class UserTaskWidget(QWidget):
             if resetFilter:
                 self.treeWidget.treeIndexItem = []
                 self.filterShotField.setText("")
-                self.treeWidget.completeTree(userTaskData)
-            else:
-                self.filterTreeByStatus()
+                self.treeWidget.shotFilter = ""
+                # self.treeWidget.completeTree(userTaskData)
+            # else:
+                # self.filterTreeByStatus()
+            self.completeTree()
         else:
             self.treeWidget.clear()
 
 # =============== Filters =============================
+    # def filterShot(self, text):
+    #     self.treeWidget.blockSignals(True)
+    #     # self.treeWidget.treeIndexItem = []
+    #     self.filterTreeByStatus()
+    #     self.treeWidget.blockSignals(False)
+
+    # def filterStatusProcess(self):
+    #     self.treeWidget.treeIndexItem = []
+    #     self.filterTreeByStatus()
+
+    # def filterTreeByStatus(self):
+    #     data = self.userServerCore.taskData
+    #     if self.filterStatus_comboBox.currentText() == "--no filter" or self.filterStatus_comboBox.currentText() == "":
+    #         filteredData = data
+    #     else:
+    #         # filteredData = self.filteredByStatusData(data)
+    #         filteredData = self.filterTreeData(data, "status", self.filterStatus_comboBox.currentText())
+    #         treeData = treeDataUtils.filterTreeData(data, "status", self.filterStatus_comboBox.currentText()) 
+    #     self.treeWidget.completeTree(filteredData, filterItems=True, filterElement=self.filterShotField.text())
+
     def filterShot(self, text):
-        self.treeWidget.blockSignals(True)
-        self.treeWidget.treeIndexItem = []
-        self.filterTreeByStatus()
-        self.treeWidget.blockSignals(False)
+        # self.treeWidget.blockSignals(True)
+        self.treeWidget.shotFilter = text
+        self.completeTree()
+        # self.treeWidget.blockSignals(False)
 
     def filterStatusProcess(self):
-        self.treeWidget.treeIndexItem = []
-        self.filterTreeByStatus()
+        self.completeTree()
 
-    def filterTreeByStatus(self):
-        data = self.userServerCore.taskData
-        if self.filterStatus_comboBox.currentText() == "--no filter" or self.filterStatus_comboBox.currentText() == "":
-            filtratedData = data
-        else:
-            filtratedData = self.filteredByStatusData(data)
-        self.treeWidget.completeTree(filtratedData, filterItems=True, filterElement=self.filterShotField.text())
+    def completeTree(self, text=""):
+        treeData = self.userServerCore.taskData
+        status = self.filterStatus_comboBox.currentText()
+        if status != "--no filter" and status != "":
+            treeData = treeDataUtils.filterTreeData(treeData, "status", status)
+        self.treeWidget.completeTree(treeData)
 
-    def filteredByStatusData(self, data):
-        filtratedData = []
 
-        for element in data:
-            element = dict(element)
-            if element.get('children'):
-                children = self.filteredByStatusData(element['children'])
-                element['children'] = children
-                filtratedData.append(element)
+    # def filterTreeData(self, data, field, value):
+    #     filteredData = []
 
-            elif element.get('status') == self.filterStatus_comboBox.currentText():
-                filtratedData.append(element)
+    #     for element in data:
+    #         element = dict(element)
+    #         if element.get('children'):
+    #             children = self.filterTreeData(element['children'], field, value)
+    #             element['children'] = children
+    #             filteredData.append(element)
 
-            if element.get('children') is not None:
-                if len(element['children']) == 0:
-                    idx = filtratedData.index(element)
-                    filtratedData.pop(idx)
-        return filtratedData
+    #         elif element.get(field) == value:
+    #             filteredData.append(element)
+
+    #         if element.get('children') is not None:
+    #             if len(element['children']) == 0:
+    #                 idx = filteredData.index(element)
+    #                 filteredData.pop(idx)
+    #     return filteredData
+    # def filteredByStatusData(self, data):
+    #     filteredData = []
+
+    #     for element in data:
+    #         element = dict(element)
+    #         if element.get('children'):
+    #             children = self.filteredByStatusData(element['children'])
+    #             element['children'] = children
+    #             filteredData.append(element)
+
+    #         elif element.get('status') == self.filterStatus_comboBox.currentText():
+    #             filteredData.append(element)
+
+    #         if element.get('children') is not None:
+    #             if len(element['children']) == 0:
+    #                 idx = filteredData.index(element)
+    #                 filteredData.pop(idx)
+    #     return filteredData
 
     def collectExtraJobData(self, selectedItem):
         extraDataDict = {}
@@ -312,7 +341,7 @@ class UserTaskWidget(QWidget):
     def getFramesCount(self, selectedItem):
         # selectedItem = itemsUtils.getSelected_ProcessItem(self)
         searchKey = selectedItem.parent().data(0, Qt.UserRole)
-        currentElementData = tacticDataProcess.getTaskElementBySearchKey(self.userServerCore.taskData, searchKey)
+        currentElementData = tacticDataProcess.getTaskElementBySearchField(self.userServerCore.taskData, "__search_key__", searchKey)
         # frame_in = currentElementData.get("frame_in")
         # frame_out = currentElementData.get("frame_out")
         frame_in = currentElementData.get("tc_frame_start")

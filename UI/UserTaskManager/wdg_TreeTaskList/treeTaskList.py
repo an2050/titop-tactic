@@ -7,9 +7,10 @@ from PySide2.QtGui import QCursor, QColor
 
 from _lib import configUtils
 
-from _lib.tactic_lib import tacticDataProcess
+from _lib.tactic_lib import tacticDataProcess, tacticPostUtils
 
 from . import itemUtils
+# from UI.UserTaskManager.utils import treeDataUtils
 
 taskManagerConfigFile = Path(__file__).parent.parent / "config.json"
 
@@ -24,6 +25,9 @@ class TreeTaskList(QTreeWidget):
         self.taskData = []
         self.allUsers = []
         self.pipelineData = []
+
+        self.shotFilter = ""
+        self.noUser = "- not assigned"
         # taskManagerConfigFile = ""
         # self.styleCSS = ""
         self.treeIndexItem = []
@@ -31,6 +35,7 @@ class TreeTaskList(QTreeWidget):
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.setColumnCount(3)
+        self.setColumnHidden(2, True)
         self.setHeaderLabels(["Task", "Status", "User"])
         self.setColumnWidth(0, 200)
         self.setColumnWidth(1, 200)
@@ -44,18 +49,23 @@ class TreeTaskList(QTreeWidget):
         # ======================= UTILS ===============================
         self.itemUtils = itemUtils.ItemUtils(self)
 
-    def completeTree(self, data, filterItems=False, filterElement=""):
+    # def completeTree(self, data, filterItems=False):        
+    def completeTree(self, data):
+        # self.blockSignals(True)
+        filterElement = self.shotFilter
+        # filterItems=True
+        # print(filterElement)
         self.allUsers = self.taskManagerWdg.userServerCore.allUsers
         # self.createUsersComboBox(self.taskManagerWdg.userServerCore.allUsers)
         # print("TREE DATA = ", data)
         self.blockSignals(True)
         self.clear()
-        if filterItems:
-            self.addTreeItemFilter(data, filterElement)
-            self.removeWaste()
-        else:
-            self.addTreeItem(data)
-        self.sortItems(0, Qt.AscendingOrder)
+        # if filterItems:
+        self.addTreeItemFilter(data, filterElement)
+        self.removeWaste()
+        # else:
+        #     self.addTreeItem(data)
+        # self.sortItems(0, Qt.AscendingOrder)
 
         isExpanded = configUtils.loadConfigData(taskManagerConfigFile).get("treeExpand")
         if isExpanded:
@@ -66,12 +76,13 @@ class TreeTaskList(QTreeWidget):
         self.setSelectedItem()
         self.blockSignals(False)
 
-    def createUsersComboBox(self):
-        usersData = self.allUsers
-        users_combobox = QComboBox(self)
-        [users_combobox.addItem(user.get('login'), user.get('function')) for user in usersData]
-        return users_combobox
+    # def createUsersComboBox(self):
+    #     usersData = self.allUsers
+    #     users_combobox = QComboBox(self)
+    #     [users_combobox.addItem(user.get('login'), user.get('function')) for user in usersData]
+    #     return users_combobox
 
+    # Base for add tree item
     def addTreeItem(self, data, parent=None):
         if parent is None:
             parent = self.invisibleRootItem()
@@ -98,6 +109,7 @@ class TreeTaskList(QTreeWidget):
             self.setItemWidget(item, 2, self.createUsersComboBox())
             item.setExpanded(True)
 
+    # Filter and add item
     def addTreeItemFilter(self, data, filterElement, parent=None, haveParent=False):
         matchParent = True
         matchItem = True
@@ -131,11 +143,16 @@ class TreeTaskList(QTreeWidget):
                 item.setData(0, Qt.UserRole, dataItem.get('__search_key__'))
                 self.addTreeItemFilter(dataItem['children'], filterElement, parent=item, haveParent=haveParent)
             elif matchParent:
-                item.setData(0, Qt.UserRole, dataItem.get('__search_key__'))
-                item.setText(0, dataItem['process'])
-                item.setText(1, dataItem['status'])
-                # item.setText(2, dataItem['assigned'])
-                # self.setItemWidget(item, 1, self.createUsersComboBox())
+                try:
+                    item.setData(0, Qt.UserRole, dataItem.get('__search_key__'))
+                    item.setData(1, Qt.UserRole, dataItem.get('assigned'))
+                    item.setText(0, dataItem['process'])
+                    item.setText(1, dataItem['status'])
+                except KeyError as err:
+                    print("Task Error! ", str(err))
+                    continue
+
+                # item.setText(3, dataItem['assigned'])
 
                 statusColor = tacticDataProcess.getStatusColor(self.pipelineData, self.project,
                                                                dataItem['process'], dataItem['status'])
@@ -143,6 +160,12 @@ class TreeTaskList(QTreeWidget):
                     item.setForeground(1, QColor(statusColor[0] + "DC" + statusColor[1:]))
 
             finalParent.addChild(item)
+            # set item combobox
+            if item.data(0, Qt.UserRole) is not None:
+                comboBox = self.getComboboxItem(item)
+                if comboBox:
+                    self.setItemWidget(item, 2, self.getComboboxItem(item))
+
             item.setExpanded(True)
 
     def checkMatchPattern(self, text, pattern):
@@ -156,7 +179,6 @@ class TreeTaskList(QTreeWidget):
                 pattern = pattern[:err.pos] + "\\" + pattern[err.pos:]
             else:
                 correctPattern = True
-
         return result
 
     def removeWaste(self):
@@ -167,6 +189,40 @@ class TreeTaskList(QTreeWidget):
                 parent.removeChild(topItem)
                 self.removeWaste()
                 break
+
+    def getComboboxItem(self, item):
+          if item.data(0, Qt.UserRole).find("task") >= 0:
+            
+            userList = [user.get('login') for user in self.allUsers] + [self.noUser]
+            assignedUser = item.data(1, Qt.UserRole)
+            if assignedUser is None or assignedUser not in userList:
+                assignedUser = self.noUser
+
+            comboBox = QComboBox()
+            comboBox.wheelEvent = lambda event: None
+            comboBox.currentIndexChanged.connect(lambda x: self.changeAssignedUser(x, comboBox, item))
+            userList = sorted(userList, key=lambda x: x != assignedUser)
+
+        # ========== adding combobox items =======
+            comboBox.blockSignals(True)
+            comboBox.addItems(userList)
+            comboBox.blockSignals(False)
+            return comboBox
+
+    def changeAssignedUser(self, idx, cmbBoxWidget, taskItem):
+        taskSkey = taskItem.data(0, Qt.UserRole)
+        newUser = cmbBoxWidget.currentText()
+        newUser = "" if newUser == self.noUser else newUser
+        tacticPostUtils.updateSobject(self.taskManagerWdg.userServerCore.server, taskSkey, {"assigned": newUser})
+
+
+
+    def createUsersComboBox(self):
+        usersData = self.allUsers
+        users_combobox = QComboBox(self)
+        [users_combobox.addItem(user.get('login'), user.get('function')) for user in usersData]
+        return users_combobox
+
 
     def expandAllTree(self, parent=None):
         if parent is None:

@@ -107,6 +107,6 @@ class TextCommentDialg(QDialog):
         self.rvSTDOUT = stdout
 
     def getProject(self):
-        project = self.taskManagerWdg.project
+        project = self.taskManagerWdg.currentProject.get('code')
         return project
 

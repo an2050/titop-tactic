@@ -5,7 +5,13 @@ def createNote(server, sObj, noteText="", process=None, subcontext=None, user=No
 
 
 def udateNote(server, sKey, text):
-    return server.update(sKey, {"note": text})
+    data = {"note": text}
+    return updateSobject(server, sKey, data)
+    # return server.update(sKey, {"note": text})
+
+
+def updateSobject(server, sKey, data):
+    return server.update(sKey, data)
 
 
 def deleteNote(server, sKey, dependece):
