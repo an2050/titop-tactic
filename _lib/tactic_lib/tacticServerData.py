@@ -37,6 +37,7 @@ class userServerCore:
         self.userData = []
         self.allUsers = []
         self.taskData = []
+        self.processList = []
         self.pipelineData = []
         self.notesData = []
         self.snapshotNotesData = []
@@ -112,7 +113,7 @@ class userServerCore:
             self.pipelineData = self.__getPipelineData(prj_code)
             self.notesData = self.__getNotesData(prj_code)
             self.snapshotNotesData = self.__getSnapshotNotesData(prj_code)
-
+            self.processList = tacticDataProcess.getProcessList(self.taskData)
         except Fault as err:
             print("Premission error: ", err)
             self.cleanServerData()
@@ -128,7 +129,7 @@ class userServerCore:
         self.notesData = self.__getNotesData(prj_code)
         self.snapshotNotesData = self.__getSnapshotNotesData(prj_code)
 
-    def getProjecstData(self, readCache=False):
+    def getProjectsData(self, readCache=False):
         projectData = self.server.query("sthpw/project", columns=projectColumns)
         projectData = filter(lambda x: x.get('code') not in ["sthpw", "admin"], projectData)
         return list(projectData)

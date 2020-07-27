@@ -55,7 +55,7 @@ class TreeTaskList(QTreeWidget):
         filterElement = self.shotFilter
         # filterItems=True
         # print(filterElement)
-        self.allUsers = self.taskManagerWdg.userServerCore.allUsers
+        self.allUsers = self.taskManagerWdg.getAllPrjUsers()
         # self.createUsersComboBox(self.taskManagerWdg.userServerCore.allUsers)
         # print("TREE DATA = ", data)
         self.blockSignals(True)

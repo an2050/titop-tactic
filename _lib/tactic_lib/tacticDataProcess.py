@@ -174,8 +174,21 @@ def getNotesElement(elementSKey, taskData, notesData):
         task = list(task.values())[0]
 
         note = filterElementsData(notesData, filters=[("search_code", code), ("process", task)])
-
     return note
+
+
+def getProcessList(taskData):
+    def getChild(taskData, lst):
+        for e in taskData:
+            if e.get('children'):
+                getChild(e.get('children'), lst)
+            else:
+                lst += [e.get('process')]
+        return lst
+
+    processList = []
+    rawList = getChild(taskData, processList)
+    return list(set(rawList))
 
 
 def saveDiskCache(data, filePath):
