@@ -3,7 +3,7 @@ import sys
 # import time
 import xml.etree.ElementTree as ET
 
-from . import tacticDataProcess
+from . import tacticDataProcess, tacticPostUtils
 
 from xmlrpc.client import Fault
 from socket import gaierror
@@ -33,8 +33,10 @@ class userServerCore:
         self.IpAdress = ""
         self.userName = ""
         self.mainProject = ""
+        self.activeProject = ""
 
         self.userData = []
+        self.isAdmin = False
         self.allUsers = []
         self.taskData = []
         self.processList = []
@@ -72,6 +74,7 @@ class userServerCore:
         self.ticket = ticketData.get('ticket')
         self.mainProject = ticketData.get('project')
         self.userData = self.__getUserData(self.userName)
+        self.isAdmin = tacticPostUtils.checkAdminPremition(server, self.userName)
         return True
 
     def setTicket(self, server):
@@ -133,6 +136,11 @@ class userServerCore:
         projectData = self.server.query("sthpw/project", columns=projectColumns)
         projectData = filter(lambda x: x.get('code') not in ["sthpw", "admin"], projectData)
         return list(projectData)
+
+    def getTemplateProjectList(self):
+        templates = self.server.query("sthpw/project", [("is_template", "True")], columns=["code"])
+        templates = [template.get('code') for template in templates]
+        return templates
 
     def __getUserData(self, userName):
         return self.server.query("sthpw/login", [('code', userName)], columns=userColumns)
@@ -285,8 +293,8 @@ class userServerCore:
             return(data)
 # ======================================================================
 
-    def getSearchType(self, itemName, prj_code, mainPrj="sthpw"):
-        serachType = self.server.build_search_type("/".join([mainPrj, itemName]), prj_code)
+    def getSearchType(self, itemName, prj_code, dataBase="sthpw"):
+        serachType = self.server.build_search_type("/".join([dataBase, itemName]), prj_code)
         return serachType
 
     # def updateTaskData(self, searchKey, data):
@@ -294,13 +302,13 @@ class userServerCore:
     #         self.server.update(searchKey, data)
 
 
-if __name__ == "__main__":
-    serverIp = "192.168.1.249:9000"
-    project = "avanpost"
-    userName = ""
-    password = "123"
+# if __name__ == "__main__":
+#     serverIp = "192.168.1.249:9000"
+#     project = "avanpost"
+#     userName = ""
+#     password = "123"
 
-    userServerCore = userServerCore()
+#     userServerCore = userServerCore()
     # projectsData = userServerCore.projecsData
     # data = userServerCore.filterElementsData(userServerCore.projectsData, [("code", "t34")], ["type", "id", "title"])
     # print(data)

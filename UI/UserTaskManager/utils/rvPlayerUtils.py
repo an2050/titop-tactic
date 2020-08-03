@@ -128,9 +128,9 @@ def runRvPlayer(paths, annotate=False):
     rvplayer = '"'.join(["", rvplayer, ""])
     paths = ['"' + path + '"' for path in paths]
     command = " ".join([rvplayer] + [" -tag target merge"] + paths)
-    print(command)
     rvProcess = Popen(command, stdout=PIPE, stderr=PIPE)
 
+    print("Launching RV Player... ")
     # out = rvProcess.stdout.read()
     if annotate:
         out = rvProcess.stderr.read().decode('utf-8').strip().replace("\n", "")

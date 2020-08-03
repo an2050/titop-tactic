@@ -13,6 +13,7 @@ py2exe = os.path.join(pythonDir, "python27", "python.exe")
 starterPath = os.path.join(rootPath, "starter.py")
 starter_hythonPath = os.path.join(rootPath, "_lib", "hou_lib", "starter_hython.cmd")
 
+projectStructureConfigFile = os.path.join(rootPath, "config", "projectStructure.json")
 mainProjectConfigFile = os.path.join(rootPath, "config_main.json")
 templateConfigFile = os.path.join(rootPath, "config_template.json")
 activeProjectsFile = os.path.join(rootPath, "activeProjects.json")
@@ -23,7 +24,12 @@ tacticConfigFile = os.path.join(rootPath, "tactic", "tacticConfig.json")
 
 tacticKeyElements = {"episode": "episode", "shot": "shot"}  # # Items that match the names in TACTIC
 tacticAssetElement = {"asset": "asset"}
-tacticProcessElements = {"comp": "comp"}
+tacticProcessElements = {"layout": "layout",
+                         "vfx": "vfx",
+                         "anim": "anim",
+                         "slr": "slr",
+                         "comp": "comp"}
+
 tacticStatusElements = {"Assignment": "Assignment", "Complete": "Complete"}
 
 

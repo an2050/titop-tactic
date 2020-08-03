@@ -6,8 +6,8 @@ sys.path += [tacticAPI_path]
 
 import tactic_server_stub
 
-serverIp = "192.168.88.200"
-project = "main"
+serverIp = "192.168.88.197"
+project = "titop"
 userName = "zaem0"
 password = "123"
 
@@ -81,7 +81,7 @@ def filterDictKeys(d, keys):
             filteredDict[key] = d[key]
     return filteredDict
 
-# print(__getTaskData())
+print(__getTaskData())
 
 # taskList = server.query("sthpw/note", [("project_code", project)], ["note", "process", "search_code"])
 # print(taskList)

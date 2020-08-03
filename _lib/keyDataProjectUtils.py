@@ -1,5 +1,5 @@
 import re
-from _lib import configUtils
+from . import configUtils
 
 
 def getRootFolder():

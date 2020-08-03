@@ -21,8 +21,8 @@ from UI.UserTaskManager.utils import treeDataUtils
 from _lib import configUtils
 from _lib.tactic_lib import tacticServerData, tacticDataProcess
 
-import rvButtons
-import activeButtons
+from . import rvButtons
+from . import activeButtons
 # import rvButtons
 
 taskManagerConfigFile = Path(__file__).parent / "config.json"
@@ -134,6 +134,7 @@ class UserTaskWidget(QWidget):
 
     def setServerProject(self, project):
         self.userServerCore.server.set_project(project)
+        self.userServerCore.activeProject = project
 
     def saveActiveProject(self, project):
         configData = configUtils.loadConfigData(taskManagerConfigFile)

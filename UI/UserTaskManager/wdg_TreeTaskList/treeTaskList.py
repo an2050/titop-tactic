@@ -9,6 +9,8 @@ from _lib import configUtils
 
 from _lib.tactic_lib import tacticDataProcess, tacticPostUtils
 
+from UI.Dialogs import treeWdg_utils
+
 from . import itemUtils
 # from UI.UserTaskManager.utils import treeDataUtils
 
@@ -32,6 +34,8 @@ class TreeTaskList(QTreeWidget):
         # self.styleCSS = ""
         self.treeIndexItem = []
 
+        self.setSortingEnabled(True)
+        self.sortByColumn(0, Qt.SortOrder(0))
         self.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Expanding)
         self.setSelectionMode(QAbstractItemView.ExtendedSelection)
         self.setColumnCount(3)
@@ -219,46 +223,22 @@ class TreeTaskList(QTreeWidget):
         else:
             tacticPostUtils.updateSobject(self.taskManagerWdg.userServerCore.server, taskSkey, {"status": "Assignment"})
 
-
-
     def createUsersComboBox(self):
         usersData = self.allUsers
         users_combobox = QComboBox(self)
         [users_combobox.addItem(user.get('login'), user.get('function')) for user in usersData]
         return users_combobox
 
-
-    def expandAllTree(self, parent=None):
-        if parent is None:
-            parent = self.invisibleRootItem()
-
-        childrenCount = parent.childCount()
-        for idx in range(childrenCount):
-            item = parent.child(idx)
-            item.setExpanded(True)
-            if item.childCount() > 0:
-                self.expandAllTree(item)
+    def expandAllTree(self):
+        treeWdg_utils.expandAllTree(self)
         # self.setSelectedItem()
-
         configData = configUtils.loadConfigData(taskManagerConfigFile)
         configData["treeExpand"] = True
         configUtils.saveConfigData(taskManagerConfigFile, configData)
 
-    def collapseAllTree(self, parent=None):
-        if parent is None:
-            parent = self.invisibleRootItem()
-
-        childrenCount = parent.childCount()
-        for idx in range(childrenCount):
-            item = parent.child(idx)
-            if item.parent() is None:
-                item.setExpanded(True)
-            else:
-                item.setExpanded(False)
-            if item.childCount() > 0:
-                self.collapseAllTree(item)
+    def collapseAllTree(self):
+        treeWdg_utils.collapseAllTree(self)
         # self.setSelectedItem()
-
         configData = configUtils.loadConfigData(taskManagerConfigFile)
         configData["treeExpand"] = False
         configUtils.saveConfigData(taskManagerConfigFile, configData)

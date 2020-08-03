@@ -59,7 +59,7 @@ try:
     # print(server.query('sthpw/project'))
 except (AttributeError, Fault):
     serverIp = "192.168.88.197"
-    userName = "zaem0"
+    userName = "super"
     password = "123"
     # server.set_server(serverIp)
 
@@ -75,59 +75,23 @@ except (AttributeError, Fault):
 
 
 
-def main(args):
 
-    # USAGE: create_project.py <project_code> <project_title> <project_type> 
-    project_code = args[0]
-    project_title = args[1]
-    project_type = args[2]
-
-    # assert project_type in ['prod', 'flash', 'simple', 'unittest', 'titop']
-    # assert project_title
-
-    regexs = r'^\d|\W'
-    m = re.search(r'%s' % regexs, project_code) 
-
-    if m:
-        raise TacticApiException('<project_code> cannot contain special characters or start with a number.')
-
-    # server = TacticServerStub.get();
-    # do the actual work
-    server.start("Create Project", "Project creation for [%s] of type [%s]" % (project_code, project_type))
-
+def createNewProject(prj_code, template_code, title):
+    server.start("Create Project", "Project creation for {} of type {}".format(prj_code, template_code))
     try:
+        args = {'project_code': prj_code,
+                'template_code': template_code,
+                'project_title': title}
 
-        args = {
-        'project_code': project_code,
-        'template_code': project_title,
-        'project_title': project_type}
-
-        # class_name = "tactic.command.CreateProjectCmd"
         class_name = "tactic.command.create_project_cmd.CopyProjectFromTemplateCmd"
 
         ret_val = server.execute_cmd(class_name, args=args)
-
-        print(ret_val)
-
-    except:
-
+        return ret_val
+    except Fault as err:
+        print(err)
+        print("Creating project error: {}".format(err))
         server.abort()
-
-        raise
-
     else:
-
         server.finish()
 
-if __name__ == '__main__':
-    executable = sys.argv[0]
-    args = sys.argv[1:]
-    args = ["api_project", "titop", "API Project"]
-    if len(args) != 3:
-        print("python create_project.py <project_code> <project_title> <project_type>")
-        sys.exit(0)
-    main(args)
-
-# print(getUserData())
-
-
+createNewProject("koxoball", "titop", "Koxoball")
