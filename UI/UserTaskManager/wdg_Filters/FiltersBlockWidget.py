@@ -110,8 +110,9 @@ class FiltersBlockWidget(QWidget):
         self.taskManagerWdg.initializeWidgetData()
 
     def refreshTaskDataButton(self):
-        self.setStatusList_comboBox()
+        self.settProjectList_comboBox()
         self.taskManagerWdg.refreshTaskData(True)
+        # self.setStatusList_comboBox()
 
     def filter_ShotProcess(self, text):
         self.taskManagerWdg.treeWidget.shotFilter = text
@@ -121,8 +122,8 @@ class FiltersBlockWidget(QWidget):
         currCode = self.filterProject_comboBox.currentData()
         currTitle = self.filterProject_comboBox.currentText()
         self.taskManagerWdg.setCurrentProject(currCode, currTitle)
-        self.taskManagerWdg.refreshTaskData()
         self.taskManagerWdg.saveActiveProject(currCode)
+        self.taskManagerWdg.refreshTaskData()
 
     def filter_StatusProcess(self):
         self.taskManagerWdg.completeTree()

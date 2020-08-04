@@ -199,6 +199,7 @@ class UserTaskWidget(QWidget):
                 # self.treeWidget.completeTree(userTaskData)
             # else:
                 # self.filterTreeByStatus()
+            # self.filtersBlock.settProjectList_comboBox()
             self.completeTree()
             self.filtersBlock.setStatusList_comboBox()
         else:
@@ -214,7 +215,7 @@ class UserTaskWidget(QWidget):
         user = self.filtersBlock.filterUser_comboBox.currentText()
         if user != "--no filter" and user != "":
             treeData = treeDataUtils.filterTreeData(treeData, "assigned", user)
-        self.treeWidget.completeTree(treeData)
+        # self.treeWidget.completeTree(treeData)
 
         process = self.filtersBlock.filterProcess_comboBox.currentText()
         if process != "--no filter" and process != "":

@@ -37,6 +37,8 @@ def getTicketData():
 
 
 def storeUserTicket(Ip, userName, ticket):
+    if not os.path.exists(os.path.dirname(tacticTicket)):
+        os.makedirs(os.path.dirname(tacticTicket))
     file = open(tacticTicket, "w")
     file.write("login=" + userName + "\n")
     file.write("server=" + Ip + "\n")

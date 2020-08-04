@@ -72,13 +72,6 @@ class NewProjectDialog(QDialog):
         self.prjCode = re.sub(r'\W', '_', prjTitle).lower()
         prjTemplate = self.headersFields.templateList.currentText()
 
-
-        # Creatin poject
-        # newProject = tacticPostUtils.createNewProject(self.server, self.prjCode, prjTemplate, prjTitle)
-        # if newProject is None:
-        #     return
-        # print("Project '{}' has been created.".format(self.prjCode))
-
         treeData = self.parserExcelDataWidget.treeData
         if not treeData:
             text = "Shots not found."
@@ -87,7 +80,6 @@ class NewProjectDialog(QDialog):
 
             if msg.showDialog(text, info) is False:
                 return
-                # self.createProject(prjTemplate, prjTitle)
 
         elif not self.prmPathField.text():
             text = "The prm path is not specified."
@@ -106,22 +98,21 @@ class NewProjectDialog(QDialog):
 
                 if msg.showDialog(text, info, detailed) is False:
                     return
-                # self.copyPrmFiles(prmPathData)
-            # else:
+
             text = "Do you want to copy files to project directory?."
             msg = simpleDialogs.MessageDialog(self)
             if msg.showDialog(text):
                 self.copyPrmFiles(prmPathData)
 
-        # prjSuccess = self.createProject(prjTemplate, prjTitle)
-        # if not prjSuccess:
-        #     return
+        prjSuccess = self.createProject(prjTemplate, prjTitle)
+        if not prjSuccess:
+            return
         self.createFolderSturcture(treeData)
 
-        # self.createTasks(treeData)
+        self.createTasks(treeData)
 
         print("Process finished!")
-        # self.accept()
+        self.accept()
 
     def createProject(self, prjTemplate, prjTitle):
         newProject = tacticPostUtils.createNewProject(self.server, self.prjCode, prjTemplate, prjTitle)
@@ -168,14 +159,6 @@ class NewProjectDialog(QDialog):
         self.writeTaskData(treeData)
         self.server.set_project(self.userServerCore.activeProject)
 
-    # def copyPrmFiles(self, prmPathData):
-    #     for prmPath in prmPaths:
-    #         try:
-    #             shutil.copyfile(prmPath[0], prmPath[1])
-    #         except FileNotFoundError:
-    #             os.makedirs(os.path.dirname(prmPath[1]))
-    #             shutil.copyfile(prmPath[0], prmPath[1])
-
     def checkPrmFiles(self, treeData):
         if not self.prmPathField.text():
             print("Prm path not found.")
@@ -188,7 +171,6 @@ class NewProjectDialog(QDialog):
                 if ".mov" in file or ".mp4" in file:
                     prmDirs.append(rootDir)
                     prmFiles.append(file)
-
 
         wastePrmFiles = list(prmFiles)
         shotsNoPrm = []
@@ -225,12 +207,10 @@ class NewProjectDialog(QDialog):
             except FileNotFoundError:
                 os.makedirs(os.path.dirname(prmPath[1]))
                 shutil.copyfile(prmPath[0], prmPath[1])
-    # def createTasksProject(self, treeData, prjCode):
-    #     self.episodeSType, self.shotSType = self.getEpisodeShotSkey(prjCode)
-        # self.writeTaskData(treeData)
 
     def writeTaskData(self, treeData, episodeCode=""):
         for data in treeData:
+            print("===data")
             if "children" in list(data.keys()):
                 episode = tacticPostUtils.createSObject(self.server, self.episodeSType, {"name": data.get('name')})
                 episodeCode = episode.get('code')

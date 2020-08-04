@@ -156,7 +156,7 @@ class userServerCore:
             ruleList = list(ET.fromstring(rules_xml))
             for rule in ruleList:
                 d = rule.attrib
-                if d.get('group') == 'project' and d.get('code') == prj_code and d.get('access') == 'allow':
+                if d.get('group') == 'project' and (d.get('code') == prj_code or d.get('code') == "*") and d.get('access') == 'allow':
                     prjGrps += [grp.get('code')]
                     break
 

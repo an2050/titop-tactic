@@ -80,6 +80,7 @@ def getUserData():
     grpList = []
     prj_code = "project_01"
     allGroupsData = server.query("sthpw/login_group", columns=["code", "access_rules"])
+    print(allGroupsData)
     for grp in allGroupsData:
         rules = grp.get('access_rules')
 
@@ -100,7 +101,7 @@ def getUserData():
     data = [] 
     for user in usersData:
         data.append(filterDictKeys(user, ["login", "function"]))
-    print(data)
+    # print(data)
 
 
 def getExpression_sObj(sType, field, values):
