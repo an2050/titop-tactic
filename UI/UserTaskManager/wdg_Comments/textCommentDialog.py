@@ -57,12 +57,18 @@ class TextCommentDialg(QDialog):
         text = self.textField.toPlainText()
 
         if self.action == "Add":
-            taskItem = self.itemUtils.getSelected_ProcessItem()
-            if taskItem is None:
-                return
-            shotSkey = taskItem.parent().data(0, Qt.UserRole)
-            process = taskItem.text(0)
-            self.taskItem = taskItem
+
+            if self.taskItem is None:            
+                self.taskItem = self.itemUtils.getSelected_ProcessItem()
+                # self.taskItem = taskItem
+                if self.taskItem is None:
+                    return
+            # else:
+            #     taskItem - self.taskItem
+
+            shotSkey = self.taskItem.parent().data(0, Qt.UserRole)
+            process = self.taskItem.text(0)
+            # self.taskItem = taskItem
             self.process = process
             self.noteData = self.commentBlockWidget.createNote(shotSkey, text, process)
 
@@ -76,7 +82,7 @@ class TextCommentDialg(QDialog):
         if self.noteData is None:
             self.saveComment()
         self.checkinNote(self.noteData)
-        self.reject()
+        self.accept()
 
     def checkinNote(self, noteData):
         if self.rvSTDOUT is not None:
@@ -93,12 +99,17 @@ class TextCommentDialg(QDialog):
                 pass
 
     def runRvPlayer(self):
-        if self.noteData is None:
-            self.saveComment()
+        # if self.noteData is None:
+        #     self.saveComment()
 
+        # if self.taskItem is None:
+        #     print("no task item")
+        #     return
         if self.taskItem is None:
-            print("no task item")
-            return
+            self.taskItem = self.itemUtils.getSelected_ProcessItem()
+            if self.taskItem is None:
+                print("no task item")
+                return
 
         if self.taskItem.text(0) == compProcess:
             stdout = rvPlayerUtils.watchDailies(self.getProject(), [self.taskItem], annotate=True)

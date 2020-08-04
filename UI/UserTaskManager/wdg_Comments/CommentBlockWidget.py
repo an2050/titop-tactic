@@ -50,9 +50,9 @@ class CommentBlockWidget(QWidget):
         self.textCommentDialog.action = action
         self.textCommentDialog.acceptButton.setText(action)
         self.textCommentDialog.taskItem = taskItem
-        self.textCommentDialog.exec_()
-        self.taskManagerWdg.refreshCommentData()
-        
+        if self.textCommentDialog.exec_():
+            self.taskManagerWdg.refreshCommentData()
+
         self.textCommentDialog.noteData = None
         self.textCommentDialog.taskItem = None
         self.textCommentDialog.rvSTDOUT = None

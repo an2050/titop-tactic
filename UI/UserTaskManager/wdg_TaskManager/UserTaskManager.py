@@ -179,6 +179,7 @@ class UserTaskWidget(QWidget):
         try:
             selectedItem = self.treeWidget.selectedItems()[0]
         except IndexError:
+            print("Comment data cannot updates, no selected items.")
             return
         self.completeNoteList(selectedItem)
 

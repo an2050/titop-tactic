@@ -62,11 +62,8 @@ class ActiveButtons():
         parentSkey = commentItem.data(Qt.UserRole).get('parentSkey')
 
         if parentSkey.find('task') >= 0:
-            # print(self.taskManagerWdg.userServerCore.taskData)
             shotCode = tacticDataProcess.getTaskElementBySearchField(self.taskManagerWdg.userServerCore.taskData, "__search_key__", parentSkey).get('search_code')
-            # shotSkey = tacticDataProcess.getTaskElementBySearchField(self.taskManagerWdg.userServerCore.taskData, "__search_key__", parentSkey).get('search_code')
-            shotName = shotSkey = tacticDataProcess.getTaskElementBySearchField(self.taskManagerWdg.userServerCore.taskData,  "code", shotCode).get('name')
-            # shotName = shotSkey = tacticDataProcess.getTaskElementBySearchField(self.taskManagerWdg.userServerCore.taskData,  "__search_key__", shotSkey).get('name')
+            shotName = tacticDataProcess.getTaskElementBySearchField(self.taskManagerWdg.userServerCore.taskData, "code", shotCode).get('name')
         else:
             shotName = tacticDataProcess.getTaskElementBySearchField(self.taskManagerWdg.userServerCore.taskData, "__search_key__", parentSkey).get('name')
 
