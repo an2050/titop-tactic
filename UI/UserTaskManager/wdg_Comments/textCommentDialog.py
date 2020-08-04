@@ -97,7 +97,7 @@ class TextCommentDialg(QDialog):
             self.saveComment()
 
         if self.taskItem is None:
-            print("not task itme")
+            print("no task item")
             return
 
         if self.taskItem.text(0) == compProcess:

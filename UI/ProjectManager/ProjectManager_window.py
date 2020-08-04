@@ -1,7 +1,8 @@
 import sys
 import os
 
-libPath = os.path.join(os.environ['CGPIPELINE'], "_lib")
+# libPath = os.path.join(os.environ['CGPIPELINE'], "_lib")
+libPath = os.path.join(os.environ['CGPIPELINE'])
 sys.path.append(libPath)
 
 from PySide2.QtWidgets import *
@@ -11,8 +12,7 @@ import central_widget
 import dock_widget
 import template_form
 
-import configUtils
-import keyDataProjectUtils
+from _lib import configUtils, keyDataProjectUtils
 
 styleCSS = os.path.join(os.path.dirname(__file__), "style.css")
 

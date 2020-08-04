@@ -1,7 +1,7 @@
 from PySide2.QtWidgets import *
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QCursor
-import configUtils
+from _lib import configUtils
 
 
 class varsTreeWidget(QWidget):

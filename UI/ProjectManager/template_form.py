@@ -9,7 +9,7 @@ if __name__ == "__main__":
     libPath = os.path.join(os.environ['CGPIPELINE'], "_lib")
     sys.path.append(libPath)
 
-import configUtils
+from _lib import configUtils
 
 
 templateConfigFile = configUtils.templateConfigFile
@@ -160,4 +160,4 @@ if __name__ == "__main__":
     w = template_form()
     w.show()
     app.exec_()
-import configUtils
+# import configUtils

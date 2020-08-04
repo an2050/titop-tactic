@@ -3,10 +3,7 @@ from PySide2.QtCore import (Qt, QItemSelectionModel)
 from PySide2.QtGui import QFont
 import os
 
-import configUtils
-import keyDataProjectUtils
-
-
+from _lib import configUtils, keyDataProjectUtils
 class projectListWidget(QListWidget):
     """docstring for projectListWidget"""
 

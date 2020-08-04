@@ -12,8 +12,7 @@ if __name__ == "__main__":
     sys.path.append(libPath)
 
 import projectList
-import configUtils
-import keyDataProjectUtils
+from _lib import configUtils, keyDataProjectUtils
 
 activeProjectsFile = Path(__file__).parent / "activeProjects.json"
 print(activeProjectsFile)
