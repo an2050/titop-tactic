@@ -108,6 +108,7 @@ def getWatchPath(func, project, selectedItems, version=None):
         else:
             path = func(keyPrjData)
         pathsList += [path] if path else []
+
     return pathsList
 
 

@@ -2,10 +2,10 @@
 # import os
 # sys.path = list(set(sys.path + [os.path.join(os.environ['CGPIPELINE'])]))
 
-from openpyxl import load_workbook
+from openpyxl import load_workbook, utils
 from PySide2.QtWidgets import *
 # from PySide2.QtCore import QSize
-from UI.Dialogs import wdg_utils
+from UI.Dialogs import wdg_utils, simpleDialogs
 from . import allSheetsDataDialog
 from . import treeExcelDataWidget
 
@@ -72,7 +72,13 @@ class MainItnputDataWidget(QWidget):
             return
 
         self.pathField.setText(excelFile)
-        self.workBook = load_workbook(excelFile)
+        try:
+            self.workBook = load_workbook(excelFile)
+        except utils.exceptions.InvalidFileException as err:
+            msg = simpleDialogs.MessageDialog(self)
+            msg.showDialog(str(err), buttons=False)
+            print(err)
+            return
         self.completeSheetList()
 
     def completeSheetList(self):

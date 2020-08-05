@@ -93,7 +93,7 @@ class NewProjectDialog(QDialog):
             if wastePrmFiles or shotsNoPrm:
                 text = "Detected inconsistencies prm files."
                 info = "Do you want to continue creating the project?"
-                detailed = "\nWaste prm files are: \n\t{} \nLost prm files for shots:\n\t{}".format(",".join(wastePrmFiles), ",".join(shotsNoPrm))
+                detailed = "\nWASTE PRM FILES ARE: \n\t{} \nLOST PRM FILES FOR SHOTS:\n\t{}".format("\n".join(wastePrmFiles), "\n".join(shotsNoPrm))
                 msg = simpleDialogs.MessageDialog(self)
 
                 if msg.showDialog(text, info, detailed) is False:
@@ -201,16 +201,20 @@ class NewProjectDialog(QDialog):
         return wastePrmFiles, shotsNoPrm, prmPathData
 
     def copyPrmFiles(self, prmPathData):
+        amount = len(prmPathData)
+        counter = 0
         for prmPath in prmPathData:
+            counter += 1
             try:
                 shutil.copyfile(prmPath[0], prmPath[1])
             except FileNotFoundError:
                 os.makedirs(os.path.dirname(prmPath[1]))
                 shutil.copyfile(prmPath[0], prmPath[1])
+        print("File copyin gprocess...", str(counter / amount * 100), "%")
 
     def writeTaskData(self, treeData, episodeCode=""):
         for data in treeData:
-            print("===data")
+            print("- Creating:", data.get('name'), "...")
             if "children" in list(data.keys()):
                 episode = tacticPostUtils.createSObject(self.server, self.episodeSType, {"name": data.get('name')})
                 episodeCode = episode.get('code')

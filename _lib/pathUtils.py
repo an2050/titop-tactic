@@ -159,7 +159,7 @@ def getVersioinFile(path, isFile=False, ext=None, version=None):
         pattern = r"(?P<name>(^|.+_)v)(?P<ver>\d{1,3})$"
 
     # Filter files by pattern
-    matchFiles = list(filter(lambda x: re.search(pattern, x) is not None, catalogList))
+    matchFiles = list(filter(lambda x: re.search(pattern, x, flags=re.IGNORECASE) is not None, catalogList))
     if len(matchFiles) == 0:
         pathError = exceptionUtils.pathError("{}: No versions found!".format(catalog))
         pathError.text = "No versions found! : {}".format(catalog)
@@ -169,38 +169,42 @@ def getVersioinFile(path, isFile=False, ext=None, version=None):
         if version is None:  # Get latest version
 
             # Get latest file form match list
-            resultFile = sorted(matchFiles, key=lambda x: re.search(pattern, x).group('ver'))[-1]
+            resultFile = sorted(matchFiles, key=lambda x: re.search(pattern, x, flags=re.IGNORECASE).group('ver'))[-1]
         else:
             # Get desired version file
             try:
-                resultFile = list(filter(lambda x: re.search(pattern, x).group('ver') == version, matchFiles))[-1]
+                resultFile = list(filter(lambda x: re.search(pattern, x, flags=re.IGNORECASE).group('ver') == version, matchFiles))[-1]
             except IndexError:
                 pathError = exceptionUtils.pathError("Version '{}' for {} not found!".format(version, catalog))
                 pathError.text = "Version '{}' for {} not found!".format(version, catalog)
                 raise pathError
 
-        collection = {"name": re.search(pattern, resultFile).group('name'),
-                      "vesion": re.search(pattern, resultFile).group('ver')}
+        collection = {"name": re.search(pattern, resultFile, flags=re.IGNORECASE).group('name'),
+                      "vesion": re.search(pattern, resultFile, flags=re.IGNORECASE).group('ver')}
         return [resultFile, collection]
 
     else:
         if version is None:
             # Get list of all major versions
-            major = [re.search(pattern, x).group('major') for x in matchFiles]
+            major = [re.search(pattern, x, flags=re.IGNORECASE).group('major') for x in matchFiles]
             # Get the highest version
             maxMajor = sorted(major, key=lambda x: int(x))[-1]
             # If files have both major and minor version it also shold be sorted.
-            maxMajorFiles = list(filter(lambda x: re.search(pattern, x).group('major') == maxMajor, matchFiles))
-            resultFile = sorted(maxMajorFiles, key=lambda x: re.search(pattern, x).group('minor'))[-1]
+            maxMajorFiles = list(filter(lambda x: re.search(pattern, x, flags=re.IGNORECASE).group('major') == maxMajor, matchFiles))
+
+            try:
+                resultFile = sorted(maxMajorFiles, key=lambda x: re.search(pattern, x, flags=re.IGNORECASE).group('minor'))[-1]
+            except TypeError:
+                resultFile = maxMajorFiles[-1]
 
         else:
-            resultFile = list(filter(lambda x: re.search(pattern, x).group('ver') == version, matchFiles))[-1]
+            resultFile = list(filter(lambda x: re.search(pattern, x, flags=re.IGNORECASE).group('ver') == version, matchFiles))[-1]
 
-        collection = {"name": re.search(pattern, resultFile).group('name'),
-                      "version": re.search(pattern, resultFile).group('ver'),
-                      "major": re.search(pattern, resultFile).group('major'),
-                      "minor": re.search(pattern, resultFile).group('minor'),
-                      "extansion": re.search(pattern, resultFile).group('ext')}
+        collection = {"name": re.search(pattern, resultFile, flags=re.IGNORECASE).group('name'),
+                      "version": re.search(pattern, resultFile, flags=re.IGNORECASE).group('ver'),
+                      "major": re.search(pattern, resultFile, flags=re.IGNORECASE).group('major'),
+                      "minor": re.search(pattern, resultFile, flags=re.IGNORECASE).group('minor'),
+                      "extansion": re.search(pattern, resultFile, flags=re.IGNORECASE).group('ext')}
         return [resultFile, collection]
 
 

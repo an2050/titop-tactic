@@ -57,21 +57,14 @@ class TextCommentDialg(QDialog):
         text = self.textField.toPlainText()
 
         if self.action == "Add":
-
-            if self.taskItem is None:            
+            if self.taskItem is None:
                 self.taskItem = self.itemUtils.getSelected_ProcessItem()
-                # self.taskItem = taskItem
                 if self.taskItem is None:
                     return
-            # else:
-            #     taskItem - self.taskItem
-
             shotSkey = self.taskItem.parent().data(0, Qt.UserRole)
             process = self.taskItem.text(0)
-            # self.taskItem = taskItem
             self.process = process
             self.noteData = self.commentBlockWidget.createNote(shotSkey, text, process)
-
 
         elif self.action == "Update":
             self.noteData = self.commentBlockWidget.updateNote(text)

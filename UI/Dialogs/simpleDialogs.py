@@ -1,6 +1,7 @@
 
 from PySide2.QtWidgets import *
 
+
 class MessageDialog(QMessageBox):
     def __init__(self, parent=None):
         super(MessageDialog, self).__init__(parent)
@@ -18,9 +19,9 @@ class MessageDialog(QMessageBox):
 #         super(MessageDialog, self).__init__(parent)
 
 
-if __name__ == "__main__":
-    app = QApplication()
-    w = MessageDialog()
-    w.showDialog("")
-    # w.show()
-    app.exec_()
+# if __name__ == "__main__":
+#     app = QApplication()
+#     w = MessageDialog()
+#     w.showDialog("")
+#     # w.show()
+#     app.exec_()

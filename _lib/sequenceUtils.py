@@ -15,20 +15,22 @@ class sequenceFileObject:
         self.countType = countType
         self.countTypes = {"houdini": "${F%p%}", "nuke": "%0%p%d"}
 
-        self.pattern = r"(.+?\.\D*?)(\d+)(\D*?(\..+))"
-        self.prefix = ""
-        self.sufix = ""
+        # self.pattern = r"(.+?\.\D*?)(\d+)(\D*?(\..+))"
+        self.pattern = r"^(?P<body>.+?(?P<ver>[vV]\d{1,4})?(\.|_))(?P<counter>\d+?)(?P<ext>\.[\w\d]{2,4})$"
+        self.body = ""
         self.ext = ""
-        self.extensions = [".exr", ".jpeg", ".jpg"]
-        self.counter = []
+        self.counter = ""
+        self.counterList = []
+        self.extensions = [".exr", ".dpx", ".jpeg", ".jpg"]
 
     def addSequenceElement(self, fileName):
         matchPattern = re.match(self.pattern, fileName)
         if not matchPattern:
             raise sequenceError("File does not match for sequence: " + fileName)
 
-        ext = matchPattern.group(4)
+        ext = matchPattern.group('ext')
         if ext not in self.extensions:
+            print("Unexpected file extension '{}'".format(ext))
             return False
 
         if self.active:
@@ -39,20 +41,17 @@ class sequenceFileObject:
             self.active = True
             self.setSeqProperties(matchPattern)
 
-        self.counter.append(matchPattern.group(2))
+        self.counterList.append(matchPattern.group('counter'))
         return True
 
     def setSeqProperties(self, matchPattern):
-        self.prefix = matchPattern.group(1)
-        self.padding = len(matchPattern.group(2))
-        self.sufix = matchPattern.group(3)
-        self.ext = matchPattern.group(4)
+        self.body = matchPattern.group('body')
+        self.ext = matchPattern.group('ext')
 
     def checkProperties(self, matchPattern):
-        prefix = self.prefix == matchPattern.group(1)
-        sufix = self.sufix == matchPattern.group(3)
+        body = self.body == matchPattern.group('body')
 
-        if prefix and sufix:
+        if body:
             return True
         else:
             return False
@@ -62,13 +61,13 @@ class sequenceFileObject:
         first = None
         last = None
 
-        self.counter.sort()
-        for idx, element in enumerate(self.counter):
+        self.counterList.sort()
+        for idx, element in enumerate(self.counterList):
             elementInt = int(element)
             if first is None:
                 first = elementInt
             try:
-                nextElement = int(self.counter[idx + 1])
+                nextElement = int(self.counterList[idx + 1])
                 if nextElement - elementInt != 1:
                     last = elementInt
                     countGroups += self.__closeSeqGroup(first, last)
@@ -88,7 +87,7 @@ class sequenceFileObject:
             return [str(last)]
 
     def getPadding(self):
-        padd = list(set([len(x) for x in self.counter]))
+        padd = list(set([len(x) for x in self.counterList]))
         if len(padd) == 1:
             return padd[0]
         else:
@@ -97,7 +96,7 @@ class sequenceFileObject:
     def getSequenceTemplate(self):
         padding = self.getPadding()
         counter = self.countTypes[self.countType].replace("%p%", str(padding))
-        return "{}{}{}".format(self.prefix, counter, self.sufix)
+        return "{}{}{}".format(self.body, counter, self.ext)
 
     def getSequenceRepr(self):
         return "{} ({})".format(self.getSequenceTemplate(), " :: ".join(self.getCountGroups()))

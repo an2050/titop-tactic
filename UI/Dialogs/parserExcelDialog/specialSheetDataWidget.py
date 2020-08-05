@@ -8,7 +8,7 @@ from . import treeExcelDataWidget
 from openpyxl import load_workbook
 from UI.Dialogs import wdg_utils
 
-presetsDict = {"epi_0100": r'^([a-z]{2,5}|[A-Z]{2,5})_?\w{2,5}_?(\w{0,4})$',
+presetsDict = {"epi_0100": r'^([a-z]{2,5}|[A-Z]{2,5})\W?\w{2,5}\W?(\w{0,4})$',
                "254_0100": r'^(\d{2,4})((_\w{2,5})|([a-zA-Z]{1,5}\w{1,5}))_?\w{0,4}$'}
 
 
