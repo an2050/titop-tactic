@@ -1,5 +1,5 @@
 try:
-    from PySide2.QtWidgets import QMessageBox, QWidget
+    from PySide2.QtWidgets import QMessageBox  # , QWidget
     from PySide2.QtCore import QCoreApplication
 except ImportError:
     from PySide.QtCore import QCoreApplication

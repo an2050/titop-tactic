@@ -1,10 +1,10 @@
-
 from PySide2.QtWidgets import *
 
 
 class MessageDialog(QMessageBox):
     def __init__(self, parent=None):
         super(MessageDialog, self).__init__(parent)
+        self.setStyleSheet("QPushButton{ width:60px; font-size: 15px; }")
 
     def showDialog(self, msgText, msgInfo="", msgDitails="", buttons=True):
         self.setText(msgText)
@@ -14,14 +14,15 @@ class MessageDialog(QMessageBox):
         self.setDetailedText(msgDitails)
         return self.exec_() == QMessageBox.Ok
 
-# class MessageDialog(QDialog):
-#     def __init__(self, parent):
-#         super(MessageDialog, self).__init__(parent)
+
+def showQFileDialog(parent, title, defaultDir="", filters=[("All", "*.*")], singleFile=False):
+    filters = ";;".join(["{d}({p})".format(d=f[0], p=f[1]) for f in filters])
+    if singleFile:
+        return QFileDialog.getOpenFileName(parent, title, defaultDir, filters)
+    else:
+        return QFileDialog.getOpenFileNames(parent, title, defaultDir, filters)
+        return
 
 
-# if __name__ == "__main__":
-#     app = QApplication()
-#     w = MessageDialog()
-#     w.showDialog("")
-#     # w.show()
-#     app.exec_()
+def showQFolderDialog(parent, title, defaultDir=""):
+    return QFileDialog.getExistingDirectory(parent, title, defaultDir)

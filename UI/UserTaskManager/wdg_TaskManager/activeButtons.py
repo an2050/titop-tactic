@@ -3,24 +3,35 @@ import subprocess
 from PySide2.QtWidgets import *
 from PySide2.QtCore import Qt
 from _lib import configUtils
-# from UI.UserTaskManager.wdg_TreeTaskList.itemUtils import ItemUtils
 from UI.UserTaskManager.utils import projectUtils
+from UI.Dialogs import simpleDialogs
 from _lib.tactic_lib import tacticPostUtils
 
-compProcess = configUtils.tacticProcessElements['comp']
+from configUtils import tctProcessElements, tctStatusElements
 
 
 class activeButtonsTM():
-
     def __init__(self, taskManager, treeWidget):
         self.taskManager = taskManager
         self.treeWidget = treeWidget
         self.itemUtils = self.treeWidget.itemUtils
 
-    def getProjectName(self):
-        return self.taskManager.getActiveProject()
+    def changeStatus(self, prevStatuses, newStatus, multipleItems=False):
+        selectedItem = self.itemUtils.getSelected_ProcessItems()
+        itemStatus = selectedItem.text(1)
+        if itemStatus in prevStatuses:
+            self.updateStatus(newStatus, selectedItem, multipleItems=multipleItems)
+        else:
+            if self.statusConfirmDialog(itemStatus, newStatus):
+                self.updateStatus(newStatus, selectedItem, multipleItems=multipleItems)
 
-    def updateStatus(self, status, items=[], refresh=True, multipleItems=False):
+    def statusConfirmDialog(self, status, newStatus):
+        msg = simpleDialogs.MessageDialog(self.taskManager)
+        # textMsg = "Procedure not followed. Continue?"
+        textInfo = "You change the status '{status}' to new status '{newStatus}'. Continue?".format(status=status, newStatus=newStatus)
+        return msg.showDialog(textInfo, buttons=True)
+
+    def updateStatus(self, status, items=[], refresh=None, multipleItems=False):
         if not items:
             items = self.itemUtils.getSelected_ProcessItems(multipleItems)
             if not items:
@@ -33,63 +44,82 @@ class activeButtonsTM():
         tacticPostUtils.updateMultipleSobjects(self.taskManager.userServerCore.server, data)
         if refresh:
             self.taskManager.refreshTaskData()
+        elif refresh is None:
+            msg = simpleDialogs.MessageDialog(self.taskManager)
+            textMsg = "Do you want to refresh view?"
+            if msg.showDialog(textMsg, buttons=True):
+                self.taskManager.refreshTaskData()
+        else:
+            pass
 
     def autoInProgressStatus(self, selectedItem):
         itemStatus = selectedItem.text(1)
-        if itemStatus in ["Ready to start"]:
+        if itemStatus in [tctStatusElements['readyToStart'],
+                          tctStatusElements['pending']]:
+
             messageDialog = QMessageBox(text='Do you want to get start?', parent=self.taskManager)
             messageDialog.setStyleSheet("QPushButton{ width:60px; font-size: 15px; }")
-            messageDialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+            messageDialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No | QMessageBox.Cancel)
             confirm = messageDialog.exec_()
-            if confirm == QMessageBox.Yes:
-                self.updateStatus('In Progress', [selectedItem])
-        else:
-            self.taskManager.refreshTaskData()
+            if confirm == QMessageBox.Cancel:
+                return False
+            elif confirm == QMessageBox.Yes:
+                self.updateStatus(tctStatusElements['inProgress'], [selectedItem], refresh=False)
+        return True
 
     def runSoft(self):
         selectedItem = self.itemUtils.getSelected_ProcessItems()
         if selectedItem is None:
             return
 
-        keyPrjData = projectUtils.getKeyPrjData(self.getProjectName(), selectedItem)
+        currProject = self.taskManager.getActiveProject()
+        keyPrjData = projectUtils.getKeyPrjData(currProject, selectedItem)
         keyTaskData = projectUtils.getItemTaskData(selectedItem, keyPrjData)
         keyPrjData = json.dumps(keyPrjData)
         taskData = json.dumps(keyTaskData)
         extraJobData = json.dumps(self.taskManager.collectExtraJobData(selectedItem))
 
-        # soft = '_nuke' if keyTaskData.get("task") == "comp" else 'houdini'
-        soft = '_nuke' if keyTaskData.get("task") == compProcess else 'houdini'
+        soft = '_nuke' if keyTaskData.get("task") == tctProcessElements['comp'] else 'houdini'
         runArgs = [configUtils.py2exe, configUtils.starterPath] + [soft] + [keyPrjData] + [taskData] + [extraJobData]
-        subprocess.Popen(runArgs, shell=True)  # , stdout=True,)
-        self.autoInProgressStatus(selectedItem)
+        if self.autoInProgressStatus(selectedItem):
+            subprocess.Popen(runArgs, shell=True)
+            self.taskManager.refreshTaskData()
 
 
-class activeButtons_artist(activeButtonsTM):
+class activeButtons_coordinator(activeButtonsTM):
     def __init__(self, taskManager, treeWidget):
-        super(activeButtons_artist, self).__init__(taskManager, treeWidget)
+        super(activeButtons_coordinator, self).__init__(taskManager, treeWidget)
 
         self.lay_activeButtons = QHBoxLayout()
-
         # ======================= BUTTONS ===============================
-        self.openButton = QPushButton("Let's go")
-        self.openButton.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.openButton.setMinimumSize(50, 50)
+        self.rejectButton = QPushButton('Reject')
+        self.rejectButton.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.rejectButton.setMinimumSize(50, 50)
 
-        self.completeButton = QPushButton('Complete')
-        self.completeButton.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.completeButton.setMinimumSize(50, 50)
+        self.acceptButton = QPushButton('Approved :-)')
+        self.acceptButton.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.acceptButton.setMinimumSize(50, 50)
 
         # ======================= CONNECTS ===============================
-        self.completeButton.clicked.connect(lambda: self.updateStatus('Revise'))
-        self.openButton.clicked.connect(self.runSoft)
+        self.rejectButton.clicked.connect(self.rejectTaskButton)
+        self.acceptButton.clicked.connect(self.approvedTaskButton)
 
         # ======================= LAYOUT SETUP ===============================
-        self.lay_activeButtons.addWidget(self.openButton)
-        self.lay_activeButtons.addWidget(self.completeButton)
+        self.lay_activeButtons.addWidget(self.rejectButton)
+        self.lay_activeButtons.addWidget(self.acceptButton)
+
+    def rejectTaskButton(self):
+        prevStatuses = [tctStatusElements['review']]
+        newStatus = tctStatusElements['pending']
+        self.changeStatus(prevStatuses, newStatus, multipleItems=True)
+
+    def approvedTaskButton(self):
+        prevStatuses = [tctStatusElements['review']]
+        newStatus = tctStatusElements['approved']
+        self.changeStatus(prevStatuses, newStatus, multipleItems=True)
 
 
 class activeButtons_supervisor(activeButtonsTM):
-
     def __init__(self, taskManager, treeWidget):
         super(activeButtons_supervisor, self).__init__(taskManager, treeWidget)
 
@@ -109,8 +139,8 @@ class activeButtons_supervisor(activeButtonsTM):
         self.acceptButton.setMinimumSize(50, 50)
 
         # ======================= CONNECTS ===============================
-        self.rejectButton.clicked.connect(lambda: self.updateStatus('Pending'))
-        self.acceptButton.clicked.connect(lambda: self.updateStatus('Review'))
+        self.rejectButton.clicked.connect(self.rejectTaskButton)
+        self.acceptButton.clicked.connect(self.acceptTaskButton)
         self.openButton.clicked.connect(self.runSoft)
 
         # ======================= LAYOUT SETUP ===============================
@@ -118,33 +148,47 @@ class activeButtons_supervisor(activeButtonsTM):
         self.lay_activeButtons.addWidget(self.acceptButton)
         self.lay_activeButtons.addWidget(self.openButton)
 
+    def rejectTaskButton(self):
+        prevStatuses = [tctStatusElements['revise']]
+        newStatus = tctStatusElements['pending']
+        self.changeStatus(prevStatuses, newStatus, multipleItems=True)
 
-class activeButtons_coordinator(activeButtonsTM):
+    def acceptTaskButton(self):
+        prevStatuses = [tctStatusElements['revise']]
+        newStatus = tctStatusElements['review']
+        self.changeStatus(prevStatuses, newStatus, multipleItems=True)
 
+
+class activeButtons_artist(activeButtonsTM):
     def __init__(self, taskManager, treeWidget):
-        super(activeButtons_coordinator, self).__init__(taskManager, treeWidget)
+        super(activeButtons_artist, self).__init__(taskManager, treeWidget)
 
         self.lay_activeButtons = QHBoxLayout()
 
         # ======================= BUTTONS ===============================
-        # self.openButton = QPushButton("Open")
-        # self.openButton.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        self.openButton = QPushButton("Let's go")
+        self.openButton.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.openButton.setMinimumSize(50, 50)
 
-        self.rejectButton = QPushButton('Reject')
-        self.rejectButton.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.rejectButton.setMinimumSize(50, 50)
-        # self.completeButton.setStyleSheet("QPushButton {background-color:#525353;}")
-
-        self.acceptButton = QPushButton('Approved :-)')
-        self.acceptButton.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
-        self.acceptButton.setMinimumSize(50, 50)
+        self.completeButton = QPushButton('Complete')
+        self.completeButton.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.completeButton.setMinimumSize(50, 50)
 
         # ======================= CONNECTS ===============================
-        self.rejectButton.clicked.connect(lambda: self.updateStatus('Pending', multipleItems=True))
-        self.acceptButton.clicked.connect(lambda: self.updateStatus('Approved :-)', multipleItems=True))
-        # self.openButton.clicked.connect(self.runSoft)
+        self.completeButton.clicked.connect(self.completeTaskButton)
+        self.openButton.clicked.connect(self.runSoft)
 
         # ======================= LAYOUT SETUP ===============================
-        self.lay_activeButtons.addWidget(self.rejectButton)
-        self.lay_activeButtons.addWidget(self.acceptButton)
-        # self.lay_activeButtons.addWidget(self.openButton)
+        self.lay_activeButtons.addWidget(self.openButton)
+        self.lay_activeButtons.addWidget(self.completeButton)
+
+    def completeTaskButton(self):
+        selectedItem = self.itemUtils.getSelected_ProcessItems()
+        itemStatus = selectedItem.text(1)
+        if itemStatus in [tctStatusElements['inProgress']]:
+            self.updateStatus(tctStatusElements['revise'])
+        else:
+            msg = simpleDialogs.MessageDialog(self.taskManager)
+            textMsg = "To complete this task the status must be '{inProgress}'".format(inProgress=tctStatusElements['inProgress'])
+            msg.showDialog(textMsg, buttons=False)
+

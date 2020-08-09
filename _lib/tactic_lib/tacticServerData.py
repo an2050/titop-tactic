@@ -26,16 +26,14 @@ assetColumns = ["code", "__search_key__", "search_code", "description", "name", 
 taskColums = ["code", "__search_key__", "search_code", "assigned", "description", "status", "process"]
 userColumns = ["code", "__search_key__", "login", "department", "user_position", "login_groups"]
 
+
 class userServerCore:
     def __init__(self):
         self.server = None
         self.connected = False
         self.IpAdress = ""
         self.userName = ""
-        # self.mainProject = ""
-        # self.activeProject = ""
         self.activeProject = {"code": "", "type": ""}
-
         self.userData = []
         self.isAdmin = False
         self.allUsers = []
@@ -45,8 +43,6 @@ class userServerCore:
         self.pipelineData = []
         self.notesData = []
         self.snapshotNotesData = []
-
-        # self.projectClms = ["code", "title", "description", "status", "__search_key__"]
 
     def connectToServer(self, resetTicket=False):
         try:
@@ -115,12 +111,9 @@ class userServerCore:
                 print("Error message: %s" % err.errmsg)
         return True
 
-    # def resetProjectData(self, prj_code, isAllData):
     def resetProjectData(self, isAllData):
         if not self.userProjects:
             return
-        # if updatePrj:
-        #     self.setServerProject()
 
         prj_code = self.activeProject.get('code')
         try:
@@ -159,6 +152,8 @@ class userServerCore:
         return self.__getAllUserProjects(self.userName)
 
     def setServerProject(self, prj_code):
+        # if prj_code == self.activeProject['code']:
+        #     return
         prj_type = self.server.query("sthpw/project", [("code", prj_code)], columns=["type"])[0].get('type')
         self.server.set_project(prj_code)
         self.activeProject['code'] = prj_code
@@ -222,7 +217,6 @@ class userServerCore:
 
         return list(set(prjList))
 
-
     def __getPipelineData(self, prj_code, filters=[], readCache=False):
         filters = [("project_code", prj_code), ("search_type", "sthpw/task")]
         pipelineData = self.server.query("sthpw/pipeline", filters)
@@ -250,21 +244,15 @@ class userServerCore:
 # =================== read server data ======================================
 # ============================= GET ALL DATA ==============================================
     def __getAllProjectData(self, prj_code, readCache=False):
-        # print("mainProject === ", self.mainProject)
-        # print("prj_code = ", prj_code)
-        # print("itemName === ", tacticKeyElements.get('episode'))
-        # epiSkey = self.getSearchType(tacticKeyElements.get('episode'), prj_code, self.mainProject)
         epiSkey = self.getSearchType(tacticKeyElements.get('episode'), prj_code, self.activeProject['type'])
         episodes = self.server.query(epiSkey, columns=episodColumns)
-        # print(episodes)
 
         assetSkey = self.getSearchType(tacticAssetElement.get('asset'), prj_code, self.activeProject['type'])
         assets = self.server.query(assetSkey)
-        # print(assets)
 
         episodeCode = tacticKeyElements.get('episode') + "_code"
         mainAsstes = [asset for asset in assets if not asset.get(episodeCode)]
-        # print('+++++++++', mainAsstes)
+
         for episod in episodes:
             episod['children'] = self.__getEpisodChildren(prj_code, episod.get('__search_key__'))
         for asset in mainAsstes:
@@ -294,11 +282,7 @@ class userServerCore:
             return tacticDataProcess.readDiskCache(tacticDataProcess.tacticTaskFileCache)
         else:
             userSearchKey = self.server.build_search_key("sthpw/login", self.userName)
-            # try:
             taskList = self.server.query("sthpw/task", [("project_code", prj_code)], columns=taskColums, parent_key=userSearchKey)
-            # except:
-            #     print("No have premission for prject '{}'".format(prj_code))
-            #     return None
             return self.__collectTaskData(taskList)
 
     def __collectTaskData(self, childrenList):

@@ -21,7 +21,7 @@ class NewProjectDialog(QDialog):
         self.prjCode = ""
         self.episodeSType = ""
         self.shotSType = ""
-        self.processes = [configUtils.tacticProcessElements.get('comp')]
+        self.processes = [configUtils.tctProcessElements.get('comp')]
 
         self.setMinimumSize(720, 480)
 
@@ -56,8 +56,7 @@ class NewProjectDialog(QDialog):
 
     def selectPrmFolder(self):
         lastFolder = self.prmPathField.text()
-        # self.prmPathField.setText("")
-        path = wdg_utils.showQFolderDialog(self, "Select prm folder", lastFolder)
+        path = simpleDialogs.showQFolderDialog(self, "Select prm folder", lastFolder)
         if path:
             self.prmPathField.setText(path)
 
@@ -157,7 +156,7 @@ class NewProjectDialog(QDialog):
         self.server.set_project(self.prjCode)
         self.episodeSType, self.shotSType = self.getEpisodeShotSkey(self.prjCode)
         self.writeTaskData(treeData)
-        self.server.set_project(self.userServerCore.activeProject)
+        self.server.set_project(self.userServerCore.activeProject['code'])
 
     def checkPrmFiles(self, treeData):
         if not self.prmPathField.text():
@@ -227,11 +226,11 @@ class NewProjectDialog(QDialog):
                 task = tacticPostUtils.createTask(self.server, shot.get('__search_key__'), self.processes[0])
                 try:
                     tacticPostUtils.updateSobject(self.server, task.get('__search_key__'),
-                                                  {"status": configUtils.tacticStatusElements.get('Assignment')})
-                except:
+                                                  {"status": configUtils.tctStatusElements.get('Assignment')})
+                except Exception:
                     tacticPostUtils.updatePipelineDependencies(self.server, self.prjCode)
                     tacticPostUtils.updateSobject(self.server, task.get('__search_key__'),
-                                                  {"status": configUtils.tacticStatusElements.get('Assignment')})
+                                                  {"status": configUtils.tctStatusElements.get('Assignment')})
 
     def getEpisodeShotSkey(self, prjCode):
         episodeItem = configUtils.tacticKeyElements.get('episode')

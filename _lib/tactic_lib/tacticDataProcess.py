@@ -1,12 +1,9 @@
 import os
 import re
-# import sys
 import json
 import xml.etree.ElementTree as ET
-# from tacticUserProcess import getTacticSerever
-from UI.CredentialWindow import CredentialtWindow
+from UI.Dialogs.credentialWindow import CredentialtWindow
 
-mainProject = "knp"
 tacticTicket = os.path.join(os.path.expanduser("~"), ".tactic", "etc", os.getlogin() + ".tacticrc")
 tacticProjectFileCache = os.path.join(os.getenv('APPDATA'), "cgpipeline", "tacticProjectCache.json")
 tacticTaskFileCache = os.path.join(os.getenv('APPDATA'), "cgpipeline", "tacticTaskCache.json")
@@ -30,7 +27,6 @@ def getTicketData():
         data['login'] = re.search(r'login=(.*)\b', text).group(1)
         data['IpAdress'] = re.search(r'server=(.*)\b', text).group(1)
         data['ticket'] = re.search(r'ticket=(.*)\b', text).group(1)
-        # data['project'] = re.search(r'project=(.*)\b', text).group(1)
     except AttributeError:
         print("Wrong user ticket file. Ticket not found!")
     return data
@@ -43,7 +39,6 @@ def storeUserTicket(Ip, userName, ticket):
     file.write("login=" + userName + "\n")
     file.write("server=" + Ip + "\n")
     file.write("ticket=" + ticket + "\n")
-    # file.write("project=" + mainProject + "\n")
     file.close()
 
 
@@ -57,7 +52,6 @@ def createSthpwUserFile(user):
     f.close()
 
 
-# Search key ========================
 def getTaskElementBySearchField(data, field, value):
     return __runTaskDataSearchField(data, field, value)
 
@@ -83,26 +77,8 @@ def getExpression_sObj(sType, field, values):
     exp = "".join(expElemets)
     return(exp)
 
-# def getTaskElementBySearchKey(data, searchKey):
-#     return __runTaskDataSearchKey(data, searchKey)
-
-# def __runTaskDataSearchKey(data, searchKey):
-#     for element in data:
-#         if element['__search_key__'] == searchKey:
-#             return element
-
-#         elif element.get('children') is not None:
-#             element = __runTaskDataSearchKey(element['children'], searchKey)
-#             if element is not None:
-#                 return element
-#         else:
-#             element = None
-#     return element
-# =======================
-
 
 def filterElementsData(data, filters=[], fields=False):
-
     newData = []
     for element in data:
 
@@ -125,7 +101,6 @@ def filterElementsData(data, filters=[], fields=False):
                 del newElement
 
             newData.append(element)
-
     return newData
 
 
@@ -148,10 +123,8 @@ def getStatusColor(pipelineData, prj, task, status):
 
 
 def getNotesElement(elementSKey, taskData, notesData):
-
     note = []
     element = getTaskElementBySearchField(taskData, "__search_key__", elementSKey)
-    # element = getTaskElementBySearchKey(taskData, elementSKey)
     keys = element.keys()
 
     if "children" in keys:
@@ -162,13 +135,7 @@ def getNotesElement(elementSKey, taskData, notesData):
     elif "process" in keys:
 
         parentCode = element.get('search_code')
-        # parentSKey = element.get('parent_search_key')
         parentElement = getTaskElementBySearchField(taskData, field="code", value=parentCode)
-        # parentElement = getTaskElementBySearchKey(taskData, parentSKey)
-
-        # print("PARENT CODE = ", parentCode)
-        # print("PARENT ELEMENT = ", parentElement)
-        # print("TASK DATA = ", taskData)
 
         code = filterElementsData([parentElement], fields=["code"])[0]
         task = filterElementsData([element], fields=["process"])[0]

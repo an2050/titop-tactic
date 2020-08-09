@@ -1,5 +1,4 @@
-import os
-
+# import os
 from pathlib import Path
 
 from PySide2.QtWidgets import *
@@ -17,11 +16,11 @@ from . import rvButtons
 from . import activeButtons
 
 taskManagerConfigFile = Path(__file__).parent / "config.json"
-styleCSS = Path(__file__).parent.parent.parent / "css" / "style.css"
-tacticConfigFile = configUtils.tacticConfigFile
+# styleCSS = Path(__file__).parent.parent.parent / "css" / "style.css"
+# tacticConfigFile = configUtils.tacticConfigFile
 
-pythonExe = os.path.join(configUtils.pythonDir, "python27", "python.exe")
-starterPath = [pythonExe, configUtils.starterPath]
+# pythonExe = os.path.join(configUtils.pythonDir, "python27", "python.exe")
+# starterPath = [pythonExe, configUtils.starterPath]
 
 
 class UserTaskWidget(QWidget):
@@ -184,7 +183,6 @@ class UserTaskWidget(QWidget):
         userTaskData = self.userServerCore.taskData
 
         self.treeWidget.pipelineData = self.userServerCore.pipelineData
-        # self.treeWidget.project = self.currentProject.get('code')
 
         if userTaskData is not None:
             if resetFilter:
@@ -216,16 +214,12 @@ class UserTaskWidget(QWidget):
             treeData = treeDataUtils.filterTreeData(treeData, "process", process)
         self.treeWidget.completeTree(treeData)
 
-
     def collectExtraJobData(self, selectedItem):
-
         extraDataDict = {}
         extraDataDict['frames'] = self.getFramesCount(selectedItem)
         return extraDataDict
 
     def getFramesCount(self, selectedItem):
-        # from UI.UserTaskManager.wdg_TreeTaskList import itemUtils
-        # selectedShotItem = itemUtils.itemsUtils.getSelected_shotItems()
         searchKey = selectedItem.parent().data(0, Qt.UserRole)
         currentElementData = tacticDataProcess.getTaskElementBySearchField(self.userServerCore.taskData, "__search_key__", searchKey)
         framesCount = currentElementData.get('frames_count')
@@ -243,7 +237,6 @@ if __name__ == "__main__":
     if userServerCore.connectToServer():
         taskManager = UserTaskWidget(userServerCore)
         taskManager.show()
-
     app.exec_()
 
 

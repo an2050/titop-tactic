@@ -4,10 +4,10 @@ from PySide2.QtCore import Qt
 
 from .iconListWidget import IconListWidget
 
-from _lib.configUtils import tacticProcessElements
+from _lib.configUtils import tctProcessElements
 from UI.UserTaskManager.utils import rvPlayerUtils
 
-compProcess = tacticProcessElements['comp']
+compProcess = tctProcessElements['comp']
 
 
 class TextCommentDialg(QDialog):

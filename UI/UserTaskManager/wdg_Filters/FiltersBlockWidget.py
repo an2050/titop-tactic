@@ -11,7 +11,6 @@ class FiltersBlockWidget(QWidget):
         self.taskManagerWdg = taskManagerWdg
 
         self.lay_main = QVBoxLayout()
-        # self.setLayout(self.lay_main)
 
         # - main layout levels
         self.lay_filters_horizontal_l0 = QHBoxLayout()

@@ -6,10 +6,12 @@ from PySide2.QtCore import Qt
 from PySide2.QtGui import QCursor, QColor
 
 from _lib import configUtils
+from _lib.configUtils import tctStatusElements
 
 from _lib.tactic_lib import tacticDataProcess, tacticPostUtils
 
 from UI.Dialogs import treeWdg_utils
+from UI.Dialogs import simpleDialogs
 
 from . import itemUtils
 # from UI.UserTaskManager.utils import treeDataUtils
@@ -23,15 +25,12 @@ class TreeTaskList(QTreeWidget):
 
         self.taskManagerWdg = taskManagerWdg
 
-        # self.project = ""
         self.taskData = []
         self.allUsers = []
         self.pipelineData = []
 
         self.shotFilter = ""
         self.noUser = "- not assigned"
-        # taskManagerConfigFile = ""
-        # self.styleCSS = ""
         self.treeIndexItem = []
 
         self.setSortingEnabled(True)
@@ -196,8 +195,7 @@ class TreeTaskList(QTreeWidget):
                 break
 
     def getComboboxItem(self, item):
-          if item.data(0, Qt.UserRole).find("task") >= 0:
-            
+        if item.data(0, Qt.UserRole).find("task") >= 0:
             userList = [user.get('login') for user in self.allUsers] + [self.noUser]
             assignedUser = item.data(1, Qt.UserRole)
             if assignedUser is None or assignedUser not in userList:
@@ -212,17 +210,34 @@ class TreeTaskList(QTreeWidget):
             comboBox.blockSignals(True)
             comboBox.addItems(userList)
             comboBox.blockSignals(False)
+            comboBox.fixedIdx = comboBox.currentIndex()
             return comboBox
 
     def changeAssignedUser(self, idx, cmbBoxWidget, taskItem):
         taskSkey = taskItem.data(0, Qt.UserRole)
         newUser = cmbBoxWidget.currentText()
         newUser = "" if newUser == self.noUser else newUser
+
+        newStatus = tctStatusElements['readyToStart'] if newUser else tctStatusElements['assignment']
+        prevStatuses = [tctStatusElements['assignment']]
+        if not self.statusConfirmDialog(taskItem, prevStatuses, newStatus):
+            cmbBoxWidget.blockSignals(True)
+            cmbBoxWidget.setCurrentIndex(cmbBoxWidget.fixedIdx)
+            cmbBoxWidget.blockSignals(False)
+            return
+        cmbBoxWidget.fixedIdx = idx
         tacticPostUtils.updateSobject(self.taskManagerWdg.userServerCore.server, taskSkey, {"assigned": newUser})
-        if newUser:
-            tacticPostUtils.updateSobject(self.taskManagerWdg.userServerCore.server, taskSkey, {"status": "Ready to Start"})
+        tacticPostUtils.updateSobject(self.taskManagerWdg.userServerCore.server, taskSkey, {"status": newStatus})
+
+    def statusConfirmDialog(self, selectedItem, prevStatuses, newStatus):
+        itemStatus = selectedItem.text(1)
+        if itemStatus in prevStatuses:
+            return True
         else:
-            tacticPostUtils.updateSobject(self.taskManagerWdg.userServerCore.server, taskSkey, {"status": "Assignment"})
+            msg = simpleDialogs.MessageDialog(self)
+            # textMsg = "Procedure not followed. Continue?"
+            textInfo = "You change the status '{status}' to new status '{newStatus}'. Continue?".format(status=itemStatus, newStatus=newStatus)
+            return msg.showDialog(textInfo, buttons=True)
 
     def createUsersComboBox(self):
         usersData = self.allUsers

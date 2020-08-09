@@ -1,10 +1,7 @@
-# import sys
-# import os
-# sys.path = list(set(sys.path + [os.path.join(os.environ['CGPIPELINE'])]))
-
 from openpyxl import load_workbook, utils
+
 from PySide2.QtWidgets import *
-# from PySide2.QtCore import QSize
+
 from UI.Dialogs import wdg_utils, simpleDialogs
 from . import allSheetsDataDialog
 from . import treeExcelDataWidget
@@ -18,9 +15,6 @@ class MainItnputDataWidget(QWidget):
         self.treeData = []
 
         self.lay_main = QVBoxLayout()
-        # self.setLayout(self.lay_main)
-
-        # self.mainTabsWidget = sheetDataWidget.MainTabsWidget(self)
 # ==================== Path block ==================================
         # - lable
         self.pathLable = QLabel("Excel file")
@@ -58,16 +52,12 @@ class MainItnputDataWidget(QWidget):
 
 # =================== LAYOUTS ==============================
         self.lay_main.addLayout(self.lay_pathWidgets)
-        # self.lay_main.addWidget(self.sheetsGroupbox)
         self.lay_main.addLayout(self.lay_sheetsBlock)
         self.lay_main.addWidget(self.treeDataWidget)
-        # self.lay_main.addStretch()
 
     def defineExcelFile(self):
-        # self.pathField.setText("")
-
         filters = [('Excel file', '*.xl*'), ('All', '*.*')]
-        excelFile, filter_ = wdg_utils.showQFileDialog(self, "Select excel file", self.pathField.text(), filters, True)
+        excelFile, filter_ = simpleDialogs.showQFileDialog(self, "Select excel file", self.pathField.text(), filters, True)
         if not excelFile:
             return
 
@@ -113,7 +103,6 @@ class MainItnputDataWidget(QWidget):
         if result:
             self.treeData = sheetsDialog.collectAllTreeData()
             self.treeDataWidget.completeTree(self.treeData)
-        # print(result)
 
     def createCheckBoxSet(self, name):
         wdg = QWidget(self)
@@ -128,9 +117,3 @@ class MainItnputDataWidget(QWidget):
         lay_main.addWidget(wdg.checkBox)
         lay_main.addStretch()
         return wdg
-
-# if __name__ == "__main__":
-#     app =QApplication()
-#     wdg = MainItnputDataWidget()
-#     wdg.show()
-#     app.exec_()

@@ -24,13 +24,21 @@ tacticConfigFile = os.path.join(rootPath, "tactic", "tacticConfig.json")
 
 tacticKeyElements = {"episode": "episode", "shot": "shot"}  # # Items that match the names in TACTIC
 tacticAssetElement = {"asset": "asset"}
-tacticProcessElements = {"layout": "layout",
-                         "vfx": "vfx",
-                         "anim": "anim",
-                         "slr": "slr",
-                         "comp": "comp"}
 
-tacticStatusElements = {"Assignment": "Assignment", "Complete": "Complete"}
+tctProcessElements = {"asset": "_asset",
+                      "layout": "layout",
+                      "anim": "anim",
+                      "vfx": "vfx",
+                      "slr": "slr",
+                      "comp": "comp"}
+
+tctStatusElements = {"assignment": "Assignment",
+                     "readyToStart": "Ready to Start",
+                     "inProgress": "In Progress",
+                     "revise": "Revise",
+                     "review": "Review",
+                     "pending": "Pending",
+                     "approved": "Approved :-)"}
 
 
 def loadConfigData(filePath):
