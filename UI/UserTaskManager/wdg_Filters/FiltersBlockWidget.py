@@ -1,6 +1,8 @@
 from PySide2.QtWidgets import *
 from PySide2.QtCore import Qt
 
+from UI.Dialogs import wdg_utils
+
 class FiltersBlockWidget(QWidget):
 
     def __init__(self, taskManagerWdg):
@@ -11,20 +13,9 @@ class FiltersBlockWidget(QWidget):
         self.lay_main = QVBoxLayout()
         # self.setLayout(self.lay_main)
 
-        # - main layout levels 
+        # - main layout levels
         self.lay_filters_horizontal_l0 = QHBoxLayout()
         self.lay_filters_horizontal_l1 = QHBoxLayout()
-
-        # - shot, project, user widhets
-        self.lay_filterShotFiled = QHBoxLayout()
-        self.lay_filterProject = QHBoxLayout()
-        self.lay_changeUser = QHBoxLayout()
-
-        # - drop-down filter layouts
-        self.lay_filterProcess = QHBoxLayout()
-        self.lay_filterStatus = QHBoxLayout()
-        self.lay_filterUser = QHBoxLayout()
-
         # ===================== WIDGETS =================================
         # - filter prject
         self.filterProject_comboBox = QComboBox(self)
@@ -34,22 +25,28 @@ class FiltersBlockWidget(QWidget):
         self.filterShot_Lable = QLabel(self)
         self.filterShot_Lable.setText("     Shot:")
         self.filterShotField = QLineEdit(self)
+        self.filterShotField.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
+        self.filterShot_blockLayout = wdg_utils.getHorizontalBlockLayout(self.filterShot_Lable, self.filterShotField)
 
         # - filter process -
         self.filterProcess_Lable = QLabel(self)
         self.filterProcess_Lable.setText("Process:")
         self.filterProcess_comboBox = QComboBox(self)
         self.filterProcess_comboBox.setMinimumSize(150, 25)
+        self.filterProcess_blockLayout = wdg_utils.getHorizontalBlockLayout(self.filterProcess_Lable, self.filterProcess_comboBox)
+
         # - filter status -
         self.filterStatus_Lable = QLabel(self)
         self.filterStatus_Lable.setText("Status:")
         self.filterStatus_comboBox = QComboBox(self)
         self.filterStatus_comboBox.setMinimumSize(150, 25)
+        self.filterStatus_blockLayout = wdg_utils.getHorizontalBlockLayout(self.filterStatus_Lable, self.filterStatus_comboBox)
         # - filter user -
         self.filterUser_Lable = QLabel(self)
         self.filterUser_Lable.setText("User:")
         self.filterUser_comboBox = QComboBox(self)
         self.filterUser_comboBox.setMinimumSize(150, 25)
+        self.filterUser_blockWidget = wdg_utils.getHorizontalBlockWidget(self.filterUser_Lable, self.filterUser_comboBox)
 
         # ======================= BUTTONS ===============================
         self.userButton = QPushButton("user")
@@ -65,37 +62,17 @@ class FiltersBlockWidget(QWidget):
         self.filterProcess_comboBox.currentTextChanged.connect(self.filter_ProcessCallback)
 
         # ===================== LAYOUTS =================================
-        # - filter shot layout -
-        self.lay_filterShotFiled.addWidget(self.filterShot_Lable)
-        self.lay_filterShotFiled.addWidget(self.filterShotField)
-        self.lay_filterShotFiled.addStretch()
-        # - filter project layout
-        self.lay_filterProject.addWidget(self.filterProject_comboBox)
-        self.lay_filterProject.addWidget(self.refreshButton)
-        self.lay_filterProject.addStretch()
-        # - change user block
-        self.lay_changeUser.addWidget(self.userButton)
+        self.filterProject_blockLayout = wdg_utils.getHorizontalBlockLayout(self.filterProject_comboBox, self.refreshButton)
 
-        # - filter process layout -
-        self.lay_filterProcess.addWidget(self.filterProcess_Lable)
-        self.lay_filterProcess.addWidget(self.filterProcess_comboBox)
-        self.lay_filterProcess.addStretch()
-        self.lay_filters_horizontal_l1.addLayout(self.lay_filterProcess)
-        # - filter status layout -
-        self.lay_filterStatus.addWidget(self.filterStatus_Lable)
-        self.lay_filterStatus.addWidget(self.filterStatus_comboBox)
-        self.lay_filterStatus.addStretch()
-        self.lay_filters_horizontal_l1.addLayout(self.lay_filterStatus)
-        self.lay_filters_horizontal_l1.addLayout(self.lay_filterStatus)
-        # - filter user layout -
-        self.lay_filterUser.addWidget(self.filterUser_Lable)
-        self.lay_filterUser.addWidget(self.filterUser_comboBox)
-        self.lay_filters_horizontal_l1.addLayout(self.lay_filterUser)
-        self.lay_filters_horizontal_l1.addLayout(self.lay_filterUser)
+        self.lay_filters_horizontal_l0.addLayout(self.filterShot_blockLayout)
+        self.lay_filters_horizontal_l0.addLayout(self.filterProject_blockLayout)
+        self.lay_filters_horizontal_l0.addWidget(self.userButton)
+        # self.lay_filters_horizontal_l0.addStretch()
 
-        self.lay_filters_horizontal_l0.addLayout(self.lay_filterShotFiled)
-        self.lay_filters_horizontal_l0.addLayout(self.lay_filterProject)
-        self.lay_filters_horizontal_l0.addLayout(self.lay_changeUser)
+        self.lay_filters_horizontal_l1.addLayout(self.filterProcess_blockLayout)
+        self.lay_filters_horizontal_l1.addLayout(self.filterStatus_blockLayout)
+        self.lay_filters_horizontal_l1.addWidget(self.filterUser_blockWidget)
+        # self.lay_filters_horizontal_l1.addStretch()
 
         self.lay_main.addLayout(self.lay_filters_horizontal_l0)
         self.lay_main.addLayout(self.lay_filters_horizontal_l1)
@@ -105,14 +82,14 @@ class FiltersBlockWidget(QWidget):
 
 # ======================== connects =================================
     def changeUserButton(self):
-        self.taskManagerWdg.userServerCore.connectToServer(resetTicket=True)
-        self.taskManagerWdg.setUserFunction()
+        if not self.taskManagerWdg.userServerCore.connectToServer(resetTicket=True):
+            return
+        self.taskManagerWdg.setUserPosition()
         self.taskManagerWdg.initializeWidgetData()
 
     def refreshTaskDataButton(self):
         self.settProjectList_comboBox()
         self.taskManagerWdg.refreshTaskData(True)
-        # self.setStatusList_comboBox()
 
     def filter_ShotProcess(self, text):
         self.taskManagerWdg.treeWidget.shotFilter = text
@@ -120,9 +97,10 @@ class FiltersBlockWidget(QWidget):
 
     def filter_ProjectProcess(self):
         currCode = self.filterProject_comboBox.currentData()
-        currTitle = self.filterProject_comboBox.currentText()
-        self.taskManagerWdg.setCurrentProject(currCode, currTitle)
+        if not currCode:
+            return
         self.taskManagerWdg.saveActiveProject(currCode)
+        self.taskManagerWdg.setServerProject(currCode)
         self.taskManagerWdg.refreshTaskData()
 
     def filter_StatusProcess(self):
@@ -159,29 +137,26 @@ class FiltersBlockWidget(QWidget):
     def setProcessList_comboBox(self):
         processList = ["--no filter"] + self.taskManagerWdg.getProcessList()
         self.taskManagerWdg.clearCombobBoxWidgetList(self.filterProcess_comboBox)
-        # print(processList)
         self.filterProcess_comboBox.addItems(processList)
 
     def settProjectList_comboBox(self):
-        self.filterProject_comboBox.blockSignals(True)
-        projectsData = self.taskManagerWdg.getProjectsData()
-        self.taskManagerWdg.clearCombobBoxWidgetList(self.filterProject_comboBox)
-        activeProject = self.taskManagerWdg.loadActiveProject()
-        prjList = sorted(projectsData, key=lambda x: x.get('code') != activeProject)
+        userProjectsList = set(self.taskManagerWdg.getUserProjects())
+        if not userProjectsList:
+            return
+        allProjects = self.taskManagerWdg.getProjectsData()
+        if "*" not in userProjectsList:
+            allProjects = filter(lambda x: x.get('code') in userProjectsList, allProjects)
 
+        self.taskManagerWdg.clearCombobBoxWidgetList(self.filterProject_comboBox)
+
+        activeProject = self.taskManagerWdg.loadActiveProject()
+        prjList = sorted(allProjects, key=lambda x: x.get('code') != activeProject)
+
+        self.filterProject_comboBox.blockSignals(True)
         for prjItem in prjList:
             self.filterProject_comboBox.addItem(prjItem.get('title'), prjItem.get('code'))
-        currCode = self.filterProject_comboBox.currentData()
-        currTitle = self.filterProject_comboBox.currentText()
-        self.taskManagerWdg.setCurrentProject(currCode, currTitle)
-        self.taskManagerWdg.setServerProject(currCode)
         self.filterProject_comboBox.blockSignals(False)
 
+        currCode = self.filterProject_comboBox.currentData()
+        self.taskManagerWdg.setServerProject(currCode)
 
-# if __name__ == "__main__":
-#     app = QApplication()
-#     app.setStyle(QStyleFactory.create("Fusion"))
-#     wdg = FiltersBlockWidget()
-#     wdg.show()
-
-#     app.exec_()

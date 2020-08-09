@@ -23,7 +23,7 @@ class TreeTaskList(QTreeWidget):
 
         self.taskManagerWdg = taskManagerWdg
 
-        self.project = ""
+        # self.project = ""
         self.taskData = []
         self.allUsers = []
         self.pipelineData = []
@@ -53,7 +53,7 @@ class TreeTaskList(QTreeWidget):
         # ======================= UTILS ===============================
         self.itemUtils = itemUtils.ItemUtils(self)
 
-    # def completeTree(self, data, filterItems=False):        
+    # def completeTree(self, data, filterItems=False):
     def completeTree(self, data):
         # self.blockSignals(True)
         filterElement = self.shotFilter
@@ -103,8 +103,8 @@ class TreeTaskList(QTreeWidget):
                 item.setText(1, dataItem['status'])
                 # item.setText(2, dataItem['assigned'])
 
-
-                statusColor = tacticDataProcess.getStatusColor(self.pipelineData, self.project,
+                activeProject = self.taskManagerWdg.getActiveProject()
+                statusColor = tacticDataProcess.getStatusColor(self.pipelineData, activeProject,
                                                                dataItem['process'], dataItem['status'])
                 if statusColor is not None:
                     item.setForeground(1, QColor(statusColor[0] + "DC" + statusColor[1:]))
@@ -158,7 +158,8 @@ class TreeTaskList(QTreeWidget):
 
                 # item.setText(3, dataItem['assigned'])
 
-                statusColor = tacticDataProcess.getStatusColor(self.pipelineData, self.project,
+                activeProject = self.taskManagerWdg.getActiveProject()
+                statusColor = tacticDataProcess.getStatusColor(self.pipelineData, activeProject,
                                                                dataItem['process'], dataItem['status'])
                 if statusColor is not None:
                     item.setForeground(1, QColor(statusColor[0] + "DC" + statusColor[1:]))
@@ -219,7 +220,7 @@ class TreeTaskList(QTreeWidget):
         newUser = "" if newUser == self.noUser else newUser
         tacticPostUtils.updateSobject(self.taskManagerWdg.userServerCore.server, taskSkey, {"assigned": newUser})
         if newUser:
-            tacticPostUtils.updateSobject(self.taskManagerWdg.userServerCore.server, taskSkey, {"status": "Ready to start"})
+            tacticPostUtils.updateSobject(self.taskManagerWdg.userServerCore.server, taskSkey, {"status": "Ready to Start"})
         else:
             tacticPostUtils.updateSobject(self.taskManagerWdg.userServerCore.server, taskSkey, {"status": "Assignment"})
 

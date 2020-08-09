@@ -27,14 +27,14 @@ class SheetDataWidget(QWidget):
         self.titleRowNumber = QSpinBox()
         self.titleRowNumber.setFixedSize(50, 25)
         self.titleRowNumber.setValue(1)
-        self.lay_titelRowNumber = wdg_utils.arrangeHorizontalLayout(self.titleRowNumber_Lable, self.titleRowNumber)
+        self.lay_titelRowNumber = wdg_utils.getHorizontalBlockLayout(self.titleRowNumber_Lable, self.titleRowNumber)
         self.lay_titelRowNumber.addStretch()
         # - add/remove buttons
         self.addRowButton = QPushButton('+')
         self.addRowButton.setFixedSize(25, 25)
         self.removeRowButton = QPushButton('-')
         self.removeRowButton.setFixedSize(25, 25)
-        self.lay_rowButtons = wdg_utils.arrangeHorizontalLayout(self.addRowButton, self.removeRowButton)
+        self.lay_rowButtons = wdg_utils.getHorizontalBlockLayout(self.addRowButton, self.removeRowButton)
         self.lay_rowButtons.addLayout(self.lay_titelRowNumber)
         self.lay_rowButtons.addStretch()
         # - regexp field
@@ -44,7 +44,7 @@ class SheetDataWidget(QWidget):
         # self.regexpField.setAlignment(Qt.AlignLeft)
         # self.regexpField.setText(pattern_01)
         self.regexpPreset_comboBox = QComboBox()
-        self.lay_regexp = wdg_utils.arrangeHorizontalLayout(self.regexpLable, self.regexpField,
+        self.lay_regexp = wdg_utils.getHorizontalBlockLayout(self.regexpLable, self.regexpField,
                                                             self.regexpPreset_comboBox)
         self.lay_rowButtons.addLayout(self.lay_regexp)
         # - list data
@@ -73,7 +73,7 @@ class SheetDataWidget(QWidget):
 # =====================================================
         self.addlistItem("name", True)
         self.addlistItem("description", True)
-        self.addlistItem("frames", True)
+        self.addlistItem("frames_count", True)
         self.setRegexpPresets()
 
     def addlistItem(self, nameField="", readOnly=False):

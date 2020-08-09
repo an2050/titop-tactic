@@ -15,9 +15,7 @@ class CommentBlockWidget(QWidget):
     def __init__(self, taskManagerWdg, treeWidget):
         self.taskManagerWdg = taskManagerWdg
         self.treeWidget = treeWidget
-        self.server = None
         self.selectedCommentItem = None
-        # self.selectedTaskItem = None
 
         self.lay_main = QVBoxLayout()
 
@@ -52,6 +50,7 @@ class CommentBlockWidget(QWidget):
         self.textCommentDialog.taskItem = taskItem
         if self.textCommentDialog.exec_():
             self.taskManagerWdg.refreshCommentData()
+        self.textCommentDialog.clearIconList()
 
         self.textCommentDialog.noteData = None
         self.textCommentDialog.taskItem = None
@@ -77,7 +76,8 @@ class CommentBlockWidget(QWidget):
         return userName == owner
 
     def createNote(self, sObject, text, process=""):
-        noteData = tacticPostUtils.createNote(self.server, sObject, text, process=process)
+        server = self.taskManagerWdg.getServerObj()
+        noteData = tacticPostUtils.createNote(server, sObject, text, process=process)
         # self.taskManagerWdg.refreshCommentData()
         return noteData
 
@@ -86,7 +86,8 @@ class CommentBlockWidget(QWidget):
             print("You cannot delete other people's comments.")
             return
         noteSkey = self.selectedCommentItem.data(Qt.UserRole).get('sKey') if noteSkey is None else noteSkey
-        noteData = tacticPostUtils.udateNote(self.server, noteSkey, text)
+        server = self.taskManagerWdg.getServerObj()
+        noteData = tacticPostUtils.udateNote(server, noteSkey, text)
         # self.taskManagerWdg.refreshCommentData()
         return noteData
 

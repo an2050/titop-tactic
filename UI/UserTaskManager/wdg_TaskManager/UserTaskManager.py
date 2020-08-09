@@ -1,29 +1,20 @@
 import os
-import sys
-
-sys.path = list(set(sys.path + [os.path.join(os.environ['CGPIPELINE'])]))
 
 from pathlib import Path
-# import getpass
 
 from PySide2.QtWidgets import *
 from PySide2.QtCore import Qt
 
 from UI.UserTaskManager.wdg_TreeTaskList import treeTaskList, treeTaskList_supervisor
-# from UI.UserTaskManager.wdg_TreeTaskList.treeWidgetTaskList import TreeTaskList
-# from UI.UserTaskManager.wdg_Comments.tableCommentList import TableCommentList
 from UI.UserTaskManager.wdg_Comments.CommentBlockWidget import CommentBlockWidget
-from UI.UserTaskManager.wdg_Filters import FiltersBlockWidget
+from UI.UserTaskManager.wdg_Filters import FiltersBlockWidget, filtersBlockWidget_admin
 from UI.UserTaskManager.utils import treeDataUtils
-
-# from UI.UserTaskManager.utils import itemsUtils
 
 from _lib import configUtils
 from _lib.tactic_lib import tacticServerData, tacticDataProcess
 
 from . import rvButtons
 from . import activeButtons
-# import rvButtons
 
 taskManagerConfigFile = Path(__file__).parent / "config.json"
 styleCSS = Path(__file__).parent.parent.parent / "css" / "style.css"
@@ -35,90 +26,92 @@ starterPath = [pythonExe, configUtils.starterPath]
 
 class UserTaskWidget(QWidget):
 
-    def __init__(self, userServerCore, parent=None):
-        super(UserTaskWidget, self).__init__(parent)
+    def __init__(self, mainWindow, userServerCore):
+        super(UserTaskWidget, self).__init__(mainWindow)
+
+        self.mainWindow = mainWindow
 
         self.userServerCore = userServerCore
-        self.userFunction = userServerCore.userData[0].get('function')
+        self.userPosition = "no position"
         self.currentProject = {}
 
-        self.resize(1280, 720)
-        self.setStyleSheet(open(styleCSS).read())
+        # self.setStyleSheet(open(styleCSS).read())
 
         # Layouts
         self.lay_main = QHBoxLayout(self)
         self.setLayout(self.lay_main)
+
+        self.leftMainWidget = QWidget(self)
+        self.leftMainWidget.setMinimumSize(440, 520)
+        self.leftMainWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
         self.lay_leftVertical = QVBoxLayout()
+        self.leftMainWidget.setLayout(self.lay_leftVertical)
+
+        self.rightMainWidget = QWidget(self)
+        self.rightMainWidget.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        self.rightMainWidget.setMinimumSize(440, 520)
         self.lay_rightVertical = QVBoxLayout()
-        self.lay_upLeftHorizontal = QHBoxLayout()
-        self.lay_upLeftHorizontal_2 = QHBoxLayout()
-        self.lay_grpBoxVertical = QVBoxLayout()
+        self.rightMainWidget.setLayout(self.lay_rightVertical)
 
         # ======================= WIDGETS ===============================
-        self.setTreeTaskWidget()
-
-        # ======================= BUTTONS ===============================
-        # ======================= UTILS ===============================
+        self.setUserPositionWidgets()
+        self.rvButtons = rvButtons.rvButtonsTM(self, self.treeWidget)
+        self.commentBlock = CommentBlockWidget(self, self.treeWidget)
 
         # ======================= CONNECTS ===============================
         self.treeWidget.currentItemChanged.connect(self.treeItemChanged)
 
         # ======================= LAYOUT SETUP ===============================
-        self.lay_main.addLayout(self.lay_leftVertical)
-        self.lay_main.addLayout(self.lay_rightVertical)
-
-        self.lay_leftVertical.addLayout(self.lay_upLeftHorizontal)
-        self.lay_leftVertical.addLayout(self.lay_upLeftHorizontal_2)
+        self.lay_leftVertical.addLayout(self.filtersBlock.lay_main)
         self.lay_leftVertical.addWidget(self.treeWidget)
 
-        self.filtersBlock = FiltersBlockWidget.FiltersBlockWidget(self)
-        self.lay_leftVertical.insertLayout(1, self.filtersBlock.lay_main)
-# ====================================================
-# ====================================================
-        self.activeButtons = self.setActiveButtons()
         self.lay_rightVertical.addLayout(self.activeButtons.lay_activeButtons)
-
-        self.rvButtons = rvButtons.rvButtonsTM(self, self.treeWidget)
         self.lay_rightVertical.addLayout(self.rvButtons.lay_rvButtons)
-
-        self.commentBlock = CommentBlockWidget(self, self.treeWidget)
         self.lay_rightVertical.insertLayout(3, self.commentBlock.lay_main)
 
+        self.lay_main.addWidget(self.leftMainWidget)
+        self.lay_main.addWidget(self.rightMainWidget)
 # ====================================================
-# ====================================================
-
         configUtils.checkAndCreateConfigFile(taskManagerConfigFile)
         self.treeWidget.taskManagerConfigFile = taskManagerConfigFile
-
 # ========================================================================================
         self.initializeWidgetData()
-
 # ========================================================================================
 
-    def setTreeTaskWidget(self):
-        if self.userFunction == 'Artist':
-            self.treeWidget = treeTaskList.TreeTaskList(self)
-        else:
-            self.treeWidget = treeTaskList_supervisor.TreeTaskList_supervisor(self)
+    def setUserPositionWidgets(self):
+        self.setUserPosition()
 
-    def setActiveButtons(self):
-        if self.userFunction == 'Artist':
-            return activeButtons.activeButtons_artist(self, self.treeWidget)
+        if self.userPosition == 'Supervisor':
+            self.filtersBlock = FiltersBlockWidget.FiltersBlockWidget(self)
+            self.treeWidget = treeTaskList_supervisor.TreeTaskList_supervisor(self)
+            self.activeButtons = activeButtons.activeButtons_supervisor(self, self.treeWidget)
+
+        elif self.userPosition == 'Coordinator':
+            self.filtersBlock = FiltersBlockWidget.FiltersBlockWidget(self)
+            self.treeWidget = treeTaskList_supervisor.TreeTaskList_supervisor(self)
+            self.activeButtons = activeButtons.activeButtons_coordinator(self, self.treeWidget)
+
         else:
-            return activeButtons.activeButtons_supervisor(self, self.treeWidget)
+            self.filtersBlock = filtersBlockWidget_admin.FiltersBlockWidget_admin(self)
+            self.treeWidget = treeTaskList.TreeTaskList(self)
+            self.activeButtons = activeButtons.activeButtons_artist(self, self.treeWidget)
+
+            self.mainWindow.menuBar.setVisible(False)
 
     def initializeWidgetData(self):
-        self.filtersBlock.setUserButtonText(self.userServerCore.userName + " (" + self.userFunction + ")")
+        self.treeWidget.clear()
+        self.filtersBlock.setUserButtonText(self.userServerCore.userName + " (" + self.userPosition + ")")
         self.filtersBlock.settProjectList_comboBox()
-        self.refreshTaskData()
-        self.filtersBlock.setStatusList_comboBox()
-        self.filtersBlock.setUserList_comboBox()
-        self.filtersBlock.setProcessList_comboBox()
-        self.commentBlock.server = self.userServerCore.server
 
 # ===========Fill Project & Status drop down lists =======================================
+    def getServerObj(self):
+        return self.userServerCore.server
+
     def getProjectsData(self):
         return self.userServerCore.getProjectsData()
+
+    def getUserProjects(self):
+        return self.userServerCore.getUserProjects()
 
     def getAllPrjUsers(self):
         return self.userServerCore.allUsers
@@ -126,15 +119,15 @@ class UserTaskWidget(QWidget):
     def getProcessList(self):
         return self.userServerCore.processList
 
-    def setUserFunction(self):
-        self.userFunction = self.userServerCore.userData[0].get('function')
+    def getActiveProject(self):
+        return self.userServerCore.activeProject.get('code')
 
-    def setCurrentProject(self, code, title):
-        self.currentProject = {"code": code, "title": title}
+    def setUserPosition(self):
+        userPosition = self.userServerCore.userData[0].get('user_position')
+        self.userPosition = userPosition if userPosition else 'no position'
 
     def setServerProject(self, project):
-        self.userServerCore.server.set_project(project)
-        self.userServerCore.activeProject = project
+        self.userServerCore.setServerProject(project)
 
     def saveActiveProject(self, project):
         configData = configUtils.loadConfigData(taskManagerConfigFile)
@@ -147,10 +140,12 @@ class UserTaskWidget(QWidget):
 
 # ===================== Connects ==========================
     def clearCombobBoxWidgetList(self, comboBoxWidget):
+        comboBoxWidget.blockSignals(True)
         prjCount = comboBoxWidget.count()
         while prjCount > 0:
             comboBoxWidget.removeItem(0)
             prjCount -= 1
+        comboBoxWidget.blockSignals(False)
 
     def treeItemChanged(self, current, previous):
         if current is None:
@@ -175,7 +170,7 @@ class UserTaskWidget(QWidget):
         self.commentBlock.completeTableList(note, itemSkey)
 
     def refreshCommentData(self):
-        self.userServerCore.refreshNotesData(self.currentProject.get('code'))
+        self.userServerCore.refreshNotesData()
         try:
             selectedItem = self.treeWidget.selectedItems()[0]
         except IndexError:
@@ -184,25 +179,24 @@ class UserTaskWidget(QWidget):
         self.completeNoteList(selectedItem)
 
     def refreshTaskData(self, resetFilter=False):
-        isTaskData = self.userFunction == "Artist"
-        # print("CURRETN PROJECT = ", self.currentProject.get('code'))
-        self.userServerCore.resetProjectData(self.currentProject.get('code'), isTaskData)
+        isAllData = self.userPosition in ["Coordinator", "Supervisor"]
+        self.userServerCore.resetProjectData(isAllData)
         userTaskData = self.userServerCore.taskData
 
         self.treeWidget.pipelineData = self.userServerCore.pipelineData
-        self.treeWidget.project = self.currentProject.get('code')
+        # self.treeWidget.project = self.currentProject.get('code')
 
         if userTaskData is not None:
             if resetFilter:
                 self.treeWidget.treeIndexItem = []
                 self.filtersBlock.filterShotField.setText("")
                 self.treeWidget.shotFilter = ""
-                # self.treeWidget.completeTree(userTaskData)
-            # else:
-                # self.filterTreeByStatus()
-            # self.filtersBlock.settProjectList_comboBox()
+
             self.completeTree()
             self.filtersBlock.setStatusList_comboBox()
+            self.filtersBlock.setUserList_comboBox()
+            self.filtersBlock.setProcessList_comboBox()
+
         else:
             self.treeWidget.clear()
 
@@ -216,7 +210,6 @@ class UserTaskWidget(QWidget):
         user = self.filtersBlock.filterUser_comboBox.currentText()
         if user != "--no filter" and user != "":
             treeData = treeDataUtils.filterTreeData(treeData, "assigned", user)
-        # self.treeWidget.completeTree(treeData)
 
         process = self.filtersBlock.filterProcess_comboBox.currentText()
         if process != "--no filter" and process != "":
@@ -225,22 +218,21 @@ class UserTaskWidget(QWidget):
 
 
     def collectExtraJobData(self, selectedItem):
+
         extraDataDict = {}
         extraDataDict['frames'] = self.getFramesCount(selectedItem)
         return extraDataDict
 
     def getFramesCount(self, selectedItem):
-        # selectedItem = itemsUtils.getSelected_ProcessItem(self)
+        # from UI.UserTaskManager.wdg_TreeTaskList import itemUtils
+        # selectedShotItem = itemUtils.itemsUtils.getSelected_shotItems()
         searchKey = selectedItem.parent().data(0, Qt.UserRole)
         currentElementData = tacticDataProcess.getTaskElementBySearchField(self.userServerCore.taskData, "__search_key__", searchKey)
-        # frame_in = currentElementData.get("frame_in")
-        # frame_out = currentElementData.get("frame_out")
-        frame_in = currentElementData.get("tc_frame_start")
-        frame_out = currentElementData.get("tc_frame_end")
-        if frame_in is not None and frame_out is not None:
-            return frame_out - frame_in + 1
+        framesCount = currentElementData.get('frames_count')
+        if not framesCount:
+            return 100
         else:
-            return 0
+            return framesCount
 
 
 if __name__ == "__main__":

@@ -32,7 +32,7 @@ class rvButtonsTM():
         self.lay_rvButtons.addWidget(self.watchPreviewButton)
 
     def getProject(self):
-        project = self.taskManager.currentProject.get('code')
+        project = self.taskManager.getActiveProject()
         return project
 
     def watchPrm(self):
@@ -52,5 +52,5 @@ class rvButtonsTM():
         rvPlayerUtils.watchSRC(self.getProject(), selectectedItems)
 
     def watchPreview(self):
-        selectectedItem = self.itemUtils.getSelected_ProcessItem()
+        selectectedItem = self.itemUtils.getSelected_ProcessItems()
         rvPlayerUtils.watchPreview(self.getProject(), selectectedItem)

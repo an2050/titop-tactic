@@ -37,7 +37,7 @@ class NewProjectDialog(QDialog):
         self.prmPathButton = QPushButton("...")
         self.prmPathButton.setMaximumWidth(25)
         prmWidgetsList = [self.prmPathLable, self.prmPathField, self.prmPathButton]
-        self.lay_prmPath = wdg_utils.arrangeHorizontalLayout(*prmWidgetsList)
+        self.lay_prmPath = wdg_utils.getHorizontalBlockLayout(*prmWidgetsList)
         # - ecxel parser block
         self.parserExcelDataWidget = ParserExcelDataWidget.MainItnputDataWidget(self)
         self.createProjectButton = QPushButton('Create project')
@@ -112,7 +112,7 @@ class NewProjectDialog(QDialog):
         self.createTasks(treeData)
 
         print("Process finished!")
-        self.accept()
+        # self.accept()
 
     def createProject(self, prjTemplate, prjTitle):
         newProject = tacticPostUtils.createNewProject(self.server, self.prjCode, prjTemplate, prjTitle)
@@ -236,7 +236,7 @@ class NewProjectDialog(QDialog):
     def getEpisodeShotSkey(self, prjCode):
         episodeItem = configUtils.tacticKeyElements.get('episode')
         shotItem = configUtils.tacticKeyElements.get('shot')
-        mainProject = self.userServerCore.mainProject
+        mainProject = self.userServerCore.activeProject['type']
         episodSKey = self.userServerCore.getSearchType(episodeItem, prjCode, mainProject)
         shotSKey = self.userServerCore.getSearchType(shotItem, prjCode, mainProject)
         return episodSKey, shotSKey

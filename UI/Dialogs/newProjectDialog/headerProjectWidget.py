@@ -21,7 +21,7 @@ class HeaderProjectFields(QWidget):
         self.esеimateLable = QLabel("Estimate")
         self.estimateChackbox = QCheckBox(self)
         horizontalWidgets_list = [self.nameLable, self.nameField, self.templateLable, self.templateList, self.esеimateLable, self.estimateChackbox]
-        self.lay_header_01 = wdg_utils.arrangeHorizontalLayout(*horizontalWidgets_list)
+        self.lay_header_01 = wdg_utils.getHorizontalBlockLayout(*horizontalWidgets_list)
 
         self.lay_header_01.addStretch(1000)
         self.lay_main.addLayout(self.lay_header_01)

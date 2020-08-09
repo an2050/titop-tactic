@@ -18,37 +18,36 @@ class activeButtonsTM():
         self.itemUtils = self.treeWidget.itemUtils
 
     def getProjectName(self):
-        return self.taskManager.currentProject.get('code')
+        return self.taskManager.getActiveProject()
 
-    def updateStatus(self, status, item=None, refresh=True):
-        if item is None or item is False:
-            item = self.itemUtils.getSelected_ProcessItem()
-        if not item:
-            return
-        searchKey = item.data(0, Qt.UserRole)
-        data = {"status": status}
+    def updateStatus(self, status, items=[], refresh=True, multipleItems=False):
+        if not items:
+            items = self.itemUtils.getSelected_ProcessItems(multipleItems)
+            if not items:
+                return
 
-        # self.taskManager.userServerCore.updateTaskData(searchKey, data)
-        tacticPostUtils.updateSobject(self.taskManager.userServerCore.server, searchKey, data)
+        items = items if isinstance(items, list) else [items]
+        data = {}
+        for item in items:
+            data[item.data(0, Qt.UserRole)] = {"status": status}
+        tacticPostUtils.updateMultipleSobjects(self.taskManager.userServerCore.server, data)
         if refresh:
             self.taskManager.refreshTaskData()
 
     def autoInProgressStatus(self, selectedItem):
         itemStatus = selectedItem.text(1)
-        # if itemStatus in ["Ready to Start", "Assignment", "Rework"]:
-        if itemStatus in ["Assigned", "Pending"]:
-            # messageDialog = QMessageBox(text='Update to "In Progress" status?', parent=self.taskManager)
-            messageDialog = QMessageBox(text='Start work process?', parent=self.taskManager)
+        if itemStatus in ["Ready to start"]:
+            messageDialog = QMessageBox(text='Do you want to get start?', parent=self.taskManager)
             messageDialog.setStyleSheet("QPushButton{ width:60px; font-size: 15px; }")
             messageDialog.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
             confirm = messageDialog.exec_()
             if confirm == QMessageBox.Yes:
-                self.setInProgress(selectedItem)
+                self.updateStatus('In Progress', [selectedItem])
         else:
             self.taskManager.refreshTaskData()
 
     def runSoft(self):
-        selectedItem = self.itemUtils.getSelected_ProcessItem()
+        selectedItem = self.itemUtils.getSelected_ProcessItems()
         if selectedItem is None:
             return
 
@@ -66,7 +65,6 @@ class activeButtonsTM():
 
 
 class activeButtons_artist(activeButtonsTM):
-
     def __init__(self, taskManager, treeWidget):
         super(activeButtons_artist, self).__init__(taskManager, treeWidget)
 
@@ -80,23 +78,14 @@ class activeButtons_artist(activeButtonsTM):
         self.completeButton = QPushButton('Complete')
         self.completeButton.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.completeButton.setMinimumSize(50, 50)
-        # self.completeButton.setStyleSheet("QPushButton {background-color:#525353;}")
 
         # ======================= CONNECTS ===============================
-        self.completeButton.clicked.connect(self.setComplete)
-        # self.inProgressButton.clicked.connect(self.setInProgress)
+        self.completeButton.clicked.connect(lambda: self.updateStatus('Revise'))
         self.openButton.clicked.connect(self.runSoft)
 
         # ======================= LAYOUT SETUP ===============================
-        # self.lay_activeButtons.addWidget(self.inProgressButton)
         self.lay_activeButtons.addWidget(self.openButton)
         self.lay_activeButtons.addWidget(self.completeButton)
-
-    def setComplete(self, item=None):
-        self.updateStatus("Revise", item)
-
-    def setInProgress(self, item=None):
-        self.updateStatus("In Progress", item)
 
 
 class activeButtons_supervisor(activeButtonsTM):
@@ -119,24 +108,43 @@ class activeButtons_supervisor(activeButtonsTM):
         self.acceptButton.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
         self.acceptButton.setMinimumSize(50, 50)
 
-        # self.unassignButton = QPushButton('Unassign')
-        # self.unassignButton.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
-        # self.acceptButton.setMinimumSize(50, 50)
-
         # ======================= CONNECTS ===============================
-        self.rejectButton.clicked.connect(self.setReject)
-        self.acceptButton.clicked.connect(self.setAccept)
-        # self.unassignButton.clicked.connect(self.setUnassign)
+        self.rejectButton.clicked.connect(lambda: self.updateStatus('Pending'))
+        self.acceptButton.clicked.connect(lambda: self.updateStatus('Review'))
         self.openButton.clicked.connect(self.runSoft)
 
         # ======================= LAYOUT SETUP ===============================
         self.lay_activeButtons.addWidget(self.rejectButton)
-        # self.lay_activeButtons.addWidget(self.unassignButton)
         self.lay_activeButtons.addWidget(self.acceptButton)
         self.lay_activeButtons.addWidget(self.openButton)
 
-    def setReject(self):
-        self.updateStatus("Pending")
 
-    def setAccept(self):
-        self.updateStatus("Review")
+class activeButtons_coordinator(activeButtonsTM):
+
+    def __init__(self, taskManager, treeWidget):
+        super(activeButtons_coordinator, self).__init__(taskManager, treeWidget)
+
+        self.lay_activeButtons = QHBoxLayout()
+
+        # ======================= BUTTONS ===============================
+        # self.openButton = QPushButton("Open")
+        # self.openButton.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+
+        self.rejectButton = QPushButton('Reject')
+        self.rejectButton.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.rejectButton.setMinimumSize(50, 50)
+        # self.completeButton.setStyleSheet("QPushButton {background-color:#525353;}")
+
+        self.acceptButton = QPushButton('Approved :-)')
+        self.acceptButton.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Fixed)
+        self.acceptButton.setMinimumSize(50, 50)
+
+        # ======================= CONNECTS ===============================
+        self.rejectButton.clicked.connect(lambda: self.updateStatus('Pending', multipleItems=True))
+        self.acceptButton.clicked.connect(lambda: self.updateStatus('Approved :-)', multipleItems=True))
+        # self.openButton.clicked.connect(self.runSoft)
+
+        # ======================= LAYOUT SETUP ===============================
+        self.lay_activeButtons.addWidget(self.rejectButton)
+        self.lay_activeButtons.addWidget(self.acceptButton)
+        # self.lay_activeButtons.addWidget(self.openButton)

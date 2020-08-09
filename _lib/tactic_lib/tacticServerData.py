@@ -5,7 +5,7 @@ import xml.etree.ElementTree as ET
 
 from . import tacticDataProcess, tacticPostUtils
 
-from xmlrpc.client import Fault
+from xmlrpc.client import Fault, ProtocolError
 from socket import gaierror
 
 tacticApi = os.path.join(os.environ.get('CGPIPELINE'), "tactic", "client")
@@ -24,7 +24,7 @@ episodColumns = ["code", "__search_key__", "search_code", "description", "name"]
 shotColumns = ["code", "__search_key__", "search_code", "description", "name", "episodes_code"]
 assetColumns = ["code", "__search_key__", "search_code", "description", "name", "episodes_code"]
 taskColums = ["code", "__search_key__", "search_code", "assigned", "description", "status", "process"]
-userColumns = ["code", "__search_key__", "login", "department", "function", "login_groups"]
+userColumns = ["code", "__search_key__", "login", "department", "user_position", "login_groups"]
 
 class userServerCore:
     def __init__(self):
@@ -32,13 +32,15 @@ class userServerCore:
         self.connected = False
         self.IpAdress = ""
         self.userName = ""
-        self.mainProject = ""
-        self.activeProject = ""
+        # self.mainProject = ""
+        # self.activeProject = ""
+        self.activeProject = {"code": "", "type": ""}
 
         self.userData = []
         self.isAdmin = False
         self.allUsers = []
         self.taskData = []
+        self.userProjects = []
         self.processList = []
         self.pipelineData = []
         self.notesData = []
@@ -56,12 +58,16 @@ class userServerCore:
         print("Connecting to server...")
 
         if resetTicket:
-            self.setTicket(server)
+            if not self.setTicket(server):
+                print("Connecting interrupted.")
+                return
 
         try:
             server.ping()
-        except (AttributeError, Fault):
-            if self.setTicket(server) is None:
+        except Exception as err:
+            print(err)
+            if not self.setTicket(server):
+                print("Connecting interrupted.")
                 return
 
         print("Connection successful.")
@@ -72,8 +78,8 @@ class userServerCore:
         self.userName = ticketData.get('login')
         self.IpAdress = ticketData.get('IpAdress')
         self.ticket = ticketData.get('ticket')
-        self.mainProject = ticketData.get('project')
         self.userData = self.__getUserData(self.userName)
+        self.userProjects = self.__getAllUserProjects(self.userName)
         self.isAdmin = tacticPostUtils.checkAdminPremition(server, self.userName)
         return True
 
@@ -102,16 +108,27 @@ class userServerCore:
             except (TimeoutError, ConnectionRefusedError):
                 textErr = "A connection attempt failed. Check IP adress."
                 print(textErr)
+            except ProtocolError as err:
+                textErr = 'A protocol error occurred. {} {}'.format(err.errmsg, err.errcode)
+                print("URL: %s" % err.url)
+                print("Error code: %d" % err.errcode)
+                print("Error message: %s" % err.errmsg)
         return True
 
-    def resetProjectData(self, prj_code, isTaskData):
-        self.server.set_project(prj_code)
+    # def resetProjectData(self, prj_code, isAllData):
+    def resetProjectData(self, isAllData):
+        if not self.userProjects:
+            return
+        # if updatePrj:
+        #     self.setServerProject()
+
+        prj_code = self.activeProject.get('code')
         try:
-            if isTaskData:
-                self.taskData = self.__getTaskData(prj_code, False)
-            else:
+            if isAllData:
                 self.taskData = self.__getAllProjectData(prj_code, False)
                 self.allUsers = self.__getAllProjecUsers(prj_code)
+            else:
+                self.taskData = self.__getTaskData(prj_code, False)
 
             self.pipelineData = self.__getPipelineData(prj_code)
             self.notesData = self.__getNotesData(prj_code)
@@ -127,7 +144,8 @@ class userServerCore:
         self.notesData = []
         self.snapshotNotesData = []
 
-    def refreshNotesData(self, prj_code):
+    def refreshNotesData(self):
+        prj_code = self.activeProject.get('code')
         self.server.set_project(prj_code)
         self.notesData = self.__getNotesData(prj_code)
         self.snapshotNotesData = self.__getSnapshotNotesData(prj_code)
@@ -136,6 +154,15 @@ class userServerCore:
         projectData = self.server.query("sthpw/project", columns=projectColumns)
         projectData = filter(lambda x: x.get('code') not in ["sthpw", "admin"], projectData)
         return list(projectData)
+
+    def getUserProjects(self):
+        return self.__getAllUserProjects(self.userName)
+
+    def setServerProject(self, prj_code):
+        prj_type = self.server.query("sthpw/project", [("code", prj_code)], columns=["type"])[0].get('type')
+        self.server.set_project(prj_code)
+        self.activeProject['code'] = prj_code
+        self.activeProject['type'] = prj_type
 
     def getTemplateProjectList(self):
         templates = self.server.query("sthpw/project", [("is_template", "True")], columns=["code"])
@@ -175,6 +202,26 @@ class userServerCore:
             userData.append(configUtils.filterDictKeys(user, userColumns))
         return userData
 
+    def __getAllUserProjects(self, user):
+        usersGroupData = self.server.query("sthpw/login_in_group", [('login', user)], columns=['login_group'])
+        usersGroupList = [grp.get('login_group') for grp in usersGroupData]
+
+        exp = tacticDataProcess.getExpression_sObj('sthpw/login_group', 'code', usersGroupList)
+        groupsData = self.server.eval(exp)
+
+        prjList = []
+        for grp in groupsData:
+            rules_xml = grp.get('access_rules')
+
+            ruleList = list(ET.fromstring(rules_xml))
+            for rule in ruleList:
+                d = rule.attrib
+                if d.get('group') == 'project' and d.get('access') == 'allow':
+                    availablePrj = d.get('code')
+                    prjList += [(availablePrj)]
+
+        return list(set(prjList))
+
 
     def __getPipelineData(self, prj_code, filters=[], readCache=False):
         filters = [("project_code", prj_code), ("search_type", "sthpw/task")]
@@ -206,11 +253,12 @@ class userServerCore:
         # print("mainProject === ", self.mainProject)
         # print("prj_code = ", prj_code)
         # print("itemName === ", tacticKeyElements.get('episode'))
-        epiSkey = self.getSearchType(tacticKeyElements.get('episode'), prj_code, self.mainProject)
+        # epiSkey = self.getSearchType(tacticKeyElements.get('episode'), prj_code, self.mainProject)
+        epiSkey = self.getSearchType(tacticKeyElements.get('episode'), prj_code, self.activeProject['type'])
         episodes = self.server.query(epiSkey, columns=episodColumns)
         # print(episodes)
 
-        assetSkey = self.getSearchType(tacticAssetElement.get('asset'), prj_code, self.mainProject)
+        assetSkey = self.getSearchType(tacticAssetElement.get('asset'), prj_code, self.activeProject['type'])
         assets = self.server.query(assetSkey)
         # print(assets)
 
@@ -225,10 +273,10 @@ class userServerCore:
         return episodes
 
     def __getEpisodChildren(self, prj_code, episodSkey):
-        assetSkey = self.getSearchType(tacticAssetElement.get('asset'), prj_code, self.mainProject)
+        assetSkey = self.getSearchType(tacticAssetElement.get('asset'), prj_code, self.activeProject['type'])
         assets = self.server.query(assetSkey, parent_key=episodSkey, columns=shotColumns)
 
-        shotSkey = self.getSearchType(tacticKeyElements.get('shot'), prj_code, self.mainProject)
+        shotSkey = self.getSearchType(tacticKeyElements.get('shot'), prj_code, self.activeProject['type'])
         shots = self.server.query(shotSkey, parent_key=episodSkey, columns=shotColumns)
         episodChildren = assets + shots
 
@@ -256,7 +304,7 @@ class userServerCore:
     def __collectTaskData(self, childrenList):
         data = []
         hasParent = False
-        columns = ["__search_key__", "code", "name", "description"]
+        columns = ["__search_key__", "code", "name", "description", "frames_count"]
 
         for child in childrenList:
             parent = self.server.get_parent(child.get('__search_key__'))
@@ -296,19 +344,3 @@ class userServerCore:
     def getSearchType(self, itemName, prj_code, dataBase="sthpw"):
         serachType = self.server.build_search_type("/".join([dataBase, itemName]), prj_code)
         return serachType
-
-    # def updateTaskData(self, searchKey, data):
-    #     if self.connected:
-    #         self.server.update(searchKey, data)
-
-
-# if __name__ == "__main__":
-#     serverIp = "192.168.1.249:9000"
-#     project = "avanpost"
-#     userName = ""
-#     password = "123"
-
-#     userServerCore = userServerCore()
-    # projectsData = userServerCore.projecsData
-    # data = userServerCore.filterElementsData(userServerCore.projectsData, [("code", "t34")], ["type", "id", "title"])
-    # print(data)

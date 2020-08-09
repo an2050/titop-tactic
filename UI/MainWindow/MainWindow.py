@@ -2,6 +2,7 @@ import os
 import sys
 from pathlib import Path
 from PySide2.QtWidgets import *
+from PySide2.QtCore import Qt
 
 sys.path = list(set(sys.path + [os.path.join(os.environ['CGPIPELINE'])]))
 
@@ -16,17 +17,13 @@ styleCSS = Path(__file__).parent.parent / "css" / "style.css"
 
 
 class MainWindowWidget(QMainWindow):
-    """docstring for MainWindowWidget"""
-
     def __init__(self, userServerCore):
         super(MainWindowWidget, self).__init__()
 
         self.setStyleSheet(open(styleCSS).read())
         self.userServerCore = userServerCore
 
-        self.centralTaskManager = UserTaskWidget(self.userServerCore, parent=self)
-        self.setCentralWidget(self.centralTaskManager)
-
+        # self.setWindowFlags(Qt.WindowStaysOnTopHint)
         # Menu bar
         self.menuBar = QMenuBar()
         self.fileMenu = self.menuBar.addMenu('File')
@@ -36,16 +33,18 @@ class MainWindowWidget(QMainWindow):
         self.act_projectStruct = self.settingsMenu.addAction("Project structure", self.openProjectStructure)
         self.setMenuBar(self.menuBar)
 
+        # ============ CENTRAL WIDGET ====================
+        self.centralTaskManager = UserTaskWidget(self, self.userServerCore)
+        self.setCentralWidget(self.centralTaskManager)
+
     def createNewProject(self):
-        login = self.userServerCore.userData[0].get("login")
+        # login = self.userServerCore.userData[0].get("login")
         admin = self.userServerCore.isAdmin
         if not admin:
             return
         # templateProjectList = self.userServerCore.getTemplateProjectList()
         createProjectDialog = CreateNewProjectDialog.NewProjectDialog(self, self.userServerCore)
-        result = createProjectDialog.exec_()
-
-        # print(result)
+        createProjectDialog.exec_()
 
     def openProjectStructure(self):
         prjSturctureDialog = PrjSturctureDialog.ProjectStructureDialog(self)

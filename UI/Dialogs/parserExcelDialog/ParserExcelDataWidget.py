@@ -32,7 +32,7 @@ class MainItnputDataWidget(QWidget):
         self.pathButton.setMaximumWidth(25)
         # - layout
         pathWidgets_list = [self.pathLable, self.pathField, self.pathButton]
-        self.lay_pathWidgets = wdg_utils.arrangeHorizontalLayout(*pathWidgets_list)
+        self.lay_pathWidgets = wdg_utils.getHorizontalBlockLayout(*pathWidgets_list)
 
 # ==================== Sheets block ==================================
         # - lable
@@ -46,7 +46,7 @@ class MainItnputDataWidget(QWidget):
         self.sheetsDialogButton = QPushButton("Setup")
         self.sheetsDialogButton.setFixedWidth(50)
         # - layout
-        self.lay_sheetsBlock = wdg_utils.arrangeHorizontalLayout(self.sheetLable, self.availableSheetsList, self.sheetsDialogButton)
+        self.lay_sheetsBlock = wdg_utils.getHorizontalBlockLayout(self.sheetLable, self.availableSheetsList, self.sheetsDialogButton)
 
 # ==================== Tree widget ==================================
         self.treeDataWidget = treeExcelDataWidget.TreeDataWidget(self)

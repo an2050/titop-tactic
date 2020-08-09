@@ -6,7 +6,7 @@ import xml.etree.ElementTree as ET
 # from tacticUserProcess import getTacticSerever
 from UI.CredentialWindow import CredentialtWindow
 
-mainProject = "titop"
+mainProject = "knp"
 tacticTicket = os.path.join(os.path.expanduser("~"), ".tactic", "etc", os.getlogin() + ".tacticrc")
 tacticProjectFileCache = os.path.join(os.getenv('APPDATA'), "cgpipeline", "tacticProjectCache.json")
 tacticTaskFileCache = os.path.join(os.getenv('APPDATA'), "cgpipeline", "tacticTaskCache.json")
@@ -30,7 +30,7 @@ def getTicketData():
         data['login'] = re.search(r'login=(.*)\b', text).group(1)
         data['IpAdress'] = re.search(r'server=(.*)\b', text).group(1)
         data['ticket'] = re.search(r'ticket=(.*)\b', text).group(1)
-        data['project'] = re.search(r'project=(.*)\b', text).group(1)
+        # data['project'] = re.search(r'project=(.*)\b', text).group(1)
     except AttributeError:
         print("Wrong user ticket file. Ticket not found!")
     return data
@@ -43,8 +43,9 @@ def storeUserTicket(Ip, userName, ticket):
     file.write("login=" + userName + "\n")
     file.write("server=" + Ip + "\n")
     file.write("ticket=" + ticket + "\n")
-    file.write("project=" + mainProject + "\n")
+    # file.write("project=" + mainProject + "\n")
     file.close()
+
 
 def createSthpwUserFile(user):
     filePath = os.path.join("C:/sthpw/etc", user + ".tacticrc")

@@ -75,33 +75,45 @@ except (AttributeError, Fault):
     except (gaierror):
         print("soket problem")
 
-def getUserData():
 
-    grpList = []
-    prj_code = "project_01"
-    allGroupsData = server.query("sthpw/login_group", columns=["code", "access_rules"])
-    print(allGroupsData)
-    for grp in allGroupsData:
-        rules = grp.get('access_rules')
 
-        ruleList = list(ET.fromstring(rules))
+
+def filterDictKeys(d, keys):
+    filteredDict = dict()
+    for key in d:
+        if key in keys:
+            filteredDict[key] = d[key]
+    return filteredDict
+
+
+def __getAllUsersProjects():
+    user = "art_comp"
+    usersGroupsData = server.query("sthpw/login_in_group", [('login', user)], columns=['login_group'])
+    usersGroupsList = [grp.get('login_group') for grp in usersGroupsData]
+
+    exp = getExpression_sObj('sthpw/login_group', 'code', usersGroupsList)
+    groupsData = server.eval(exp)
+
+    prjList = []
+    # print(groupsData)
+    for grp in groupsData:
+        rules_xml = grp.get('access_rules')
+
+        ruleList = list(ET.fromstring(rules_xml))
         for rule in ruleList:
             d = rule.attrib
-            if d.get('group') == 'project' and (d.get('code') == prj_code or d.get('code') == "*") and d.get('access') == 'allow':
-                grpList += [grp.get('code')]
-                break
+            if d.get('group') == 'project' and d.get('access') == 'allow':
+                availablePrj = d.get('code')
+                prjList += [(availablePrj)]
 
-    exp = getExpression_sObj('sthpw/login_in_group', 'login_group', grpList)
-    userInGrp = server.eval(exp)
-    userCodes = [user.get('login') for user in userInGrp]
+    return list(set(prjList))
+    # groupsData = server.query("sthpw/login_group", [('code', user)], columns=['login_group'])
 
-    exp = getExpression_sObj('sthpw/login', 'login', userCodes)
-    usersData = server.eval(exp)
 
-    data = [] 
-    for user in usersData:
-        data.append(filterDictKeys(user, ["login", "function"]))
-    print(data)
+def getAllProjects():
+    prjData = server.query("sthpw/project")
+    projects = [prj.get('code') for prj in prjData]
+    return projects
 
 
 def getExpression_sObj(sType, field, values):
@@ -112,12 +124,15 @@ def getExpression_sObj(sType, field, values):
     return(exp)
 
 
-def filterDictKeys(d, keys):
-    filteredDict = dict()
-    for key in d:
-        if key in keys:
-            filteredDict[key] = d[key]
-    return filteredDict
+usersPrjcts = __getAllUsersProjects()
+allPrjts = getAllProjects()
+print("All = ", allPrjts)
+print("Users = ", usersPrjcts)
 
-# print(getExpression_sObj('sthpw/login_in_group', 'login_group', ['admin', 'zaem0', 'art_comp']))
-print(getUserData())
+print("*" in usersPrjcts)
+print(set(usersPrjcts).intersection(set(allPrjts)))
+
+
+
+
+# print(getUserData())

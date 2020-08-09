@@ -10,7 +10,7 @@ class ItemUtils(object):
         self.treeWidget = treeWidget
         self.tacticElements = configUtils.tacticKeyElements
 
-    def getSelected_ProcessItem(self):
+    def getSelected_ProcessItems(self, getMultiple=False):
         try:
             selectedItem = self.treeWidget.selectedItems()[0]
         except IndexError:
@@ -22,11 +22,19 @@ class ItemUtils(object):
 
         if selectedItem.childCount() > 1:
             lst = [selectedItem.child(x).text(0) for x in range(selectedItem.childCount())]
+            if getMultiple:
+                lst.insert(0, 'all')
+
             i, ok = QInputDialog().getItem(self.treeWidget, "Dialog Title", "Lable:", lst, 0, False)
+
             if not ok:
-                return None
-            idx = lst.index(i)
-            return selectedItem.child(idx)
+                return
+            elif i == 'all':
+                return [selectedItem.child(idx) for idx in range(selectedItem.childCount())]
+            else:
+                idx = lst.index(i)
+                return selectedItem.child(idx)
+
         elif selectedItem.childCount() == 1:
             return selectedItem.child(0)
         else:

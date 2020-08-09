@@ -20,7 +20,7 @@ class ProjectStructureDialog(QDialog):
         self.saveButton = QPushButton("Save")
         self.acceptButton = QPushButton("Accept")
         self.discardButton = QPushButton("Discard")
-        self.lay_buttons = wdg_utils.arrangeHorizontalLayout(self.saveButton, self.acceptButton, self.discardButton)
+        self.lay_buttons = wdg_utils.getHorizontalBlockLayout(self.saveButton, self.acceptButton, self.discardButton)
 
         self.saveButton.clicked.connect(self.saveProjectStructure)
         self.acceptButton.clicked.connect(self.saveAndAccept)

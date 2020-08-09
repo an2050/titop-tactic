@@ -1,14 +1,32 @@
 from PySide2.QtWidgets import *
+# from PySide2.QtCore import Qt
 
 
-def arrangeHorizontalLayout(*widgets, lay=False):
+def getHorizontalBlockLayout(*widgets, lay=False):
     lay_horizontal = QHBoxLayout()
     for widget in widgets:
         if lay:
             lay_horizontal.addLayout(widget)
         else:
             lay_horizontal.addWidget(widget)
+    lay_horizontal.addStretch()
     return lay_horizontal
+
+
+def getHorizontalBlockWidget(*widgets, lay=False):
+    wdg = QWidget()
+    # wdg.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Minimum)
+    lay_horizontal = QHBoxLayout()
+    wdg.setLayout(lay_horizontal)
+    # lay = QHBoxLayout()
+
+    for widget in widgets:
+        if lay:
+            lay_horizontal.addLayout(widget)
+        else:
+            lay_horizontal.addWidget(widget)
+    lay_horizontal.addStretch()
+    return wdg
 
 
 def arrangeVerticalLayout(*widgets):
