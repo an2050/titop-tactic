@@ -294,9 +294,3 @@ class TreeTaskList(QTreeWidget):
         menu.exec_(QCursor.pos())
 # ===========================================
 
-# if __name__ == "__main__":
-#     app = QApplication()
-#     # app.setStyle(QStyleFactory.create("Fusion"))
-#     window = TreeTaskList()
-#     window.show()
-#     app.exec_()

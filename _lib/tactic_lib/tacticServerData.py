@@ -39,7 +39,8 @@ class userServerCore:
         self.allUsers = []
         self.taskData = []
         self.userProjects = []
-        self.processList = []
+        self.processesData = []
+        self.activeProcessesList = []
         self.pipelineData = []
         self.notesData = []
         self.snapshotNotesData = []
@@ -123,10 +124,11 @@ class userServerCore:
             else:
                 self.taskData = self.__getTaskData(prj_code, False)
 
-            self.pipelineData = self.__getPipelineData(prj_code)
+            self.pipelineData = self.__getPipelineData(prj_code)  # This pipline data represents task for getting status color
+            self.processesData = self.__getProcessesData(prj_code)
             self.notesData = self.__getNotesData(prj_code)
             self.snapshotNotesData = self.__getSnapshotNotesData(prj_code)
-            self.processList = tacticDataProcess.getProcessList(self.taskData)
+            self.activeProcessesList = tacticDataProcess.getActiveProcessesList(self.taskData)
         except Fault as err:
             print("Premission error: ", err)
             self.cleanServerData()
@@ -217,10 +219,27 @@ class userServerCore:
 
         return list(set(prjList))
 
+    # This pipline data represents tasks for getting status color
     def __getPipelineData(self, prj_code, filters=[], readCache=False):
         filters = [("project_code", prj_code), ("search_type", "sthpw/task")]
         pipelineData = self.server.query("sthpw/pipeline", filters)
         return pipelineData
+
+    # Getting list of pipelines and it processes.
+    def __getProcessesData(self, prj_code):
+        exp = "@SOBJECT(sthpw/pipeline['project_code','" + prj_code + "']['search_type', 'NEQ', '.*task'])"
+        pipelineProcessData = self.server.eval(exp)
+
+        processesData = []
+        for pipeline in pipelineProcessData:
+            root = ET.fromstring(pipeline.get('pipeline'))
+            processList = [process.get('name') for process in root if process.get('name')]
+
+            pipelineData = {"__search_key__": pipeline.get("__search_key__")}
+            pipelineData["code"] = pipeline.get("code")
+            pipelineData['processes'] = processList
+            processesData.append(pipelineData)
+        return processesData
 
     def __getNotesData(self, prj_code):
         filters = [("project_code", prj_code)]

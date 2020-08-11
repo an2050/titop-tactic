@@ -226,11 +226,11 @@ class NewProjectDialog(QDialog):
                 task = tacticPostUtils.createTask(self.server, shot.get('__search_key__'), self.processes[0])
                 try:
                     tacticPostUtils.updateSobject(self.server, task.get('__search_key__'),
-                                                  {"status": configUtils.tctStatusElements.get('Assignment')})
+                                                  {"status": configUtils.tctStatusElements.get('assignment')})
                 except Exception:
                     tacticPostUtils.updatePipelineDependencies(self.server, self.prjCode)
                     tacticPostUtils.updateSobject(self.server, task.get('__search_key__'),
-                                                  {"status": configUtils.tctStatusElements.get('Assignment')})
+                                                  {"status": configUtils.tctStatusElements.get('assignment')})
 
     def getEpisodeShotSkey(self, prjCode):
         episodeItem = configUtils.tacticKeyElements.get('episode')

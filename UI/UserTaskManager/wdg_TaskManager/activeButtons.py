@@ -17,13 +17,19 @@ class activeButtonsTM():
         self.itemUtils = self.treeWidget.itemUtils
 
     def changeStatus(self, prevStatuses, newStatus, multipleItems=False):
-        selectedItem = self.itemUtils.getSelected_ProcessItems()
-        itemStatus = selectedItem.text(1)
+        selectedItems = self.itemUtils.getSelected_ProcessItems(multipleItems)
+        if selectedItems is None:
+            return
+
+        if isinstance(selectedItems, list):
+            itemStatus = selectedItems[0].text(1)
+        else:
+            itemStatus = selectedItems.text(1)
         if itemStatus in prevStatuses:
-            self.updateStatus(newStatus, selectedItem, multipleItems=multipleItems)
+            self.updateStatus(newStatus, selectedItems)
         else:
             if self.statusConfirmDialog(itemStatus, newStatus):
-                self.updateStatus(newStatus, selectedItem, multipleItems=multipleItems)
+                self.updateStatus(newStatus, selectedItems)
 
     def statusConfirmDialog(self, status, newStatus):
         msg = simpleDialogs.MessageDialog(self.taskManager)

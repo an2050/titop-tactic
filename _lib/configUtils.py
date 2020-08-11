@@ -30,7 +30,10 @@ tctProcessElements = {"asset": "_asset",
                       "anim": "anim",
                       "vfx": "vfx",
                       "slr": "slr",
-                      "comp": "comp"}
+                      "comp": "comp",
+                      "modeling": "modeling",
+                      "rigging": "rigging",
+                      "texturing": "texturing"}
 
 tctStatusElements = {"assignment": "Assignment",
                      "readyToStart": "Ready to Start",

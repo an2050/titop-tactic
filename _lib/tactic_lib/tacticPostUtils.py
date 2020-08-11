@@ -54,7 +54,7 @@ def updateMultipleSobjects(server, data):
     return server.update_multiple(data)
 
 
-def deleteNote(server, sKey, dependece):
+def deleteSObject(server, sKey, dependece):
     server.delete_sobject(sKey, dependece)
 
 

@@ -4,7 +4,7 @@ from pathlib import Path
 from PySide2.QtWidgets import *
 from PySide2.QtCore import Qt
 
-from UI.UserTaskManager.wdg_TreeTaskList import treeTaskList, treeTaskList_supervisor
+from UI.UserTaskManager.wdg_TreeTaskList import treeTaskList, treeTaskList_admins
 from UI.UserTaskManager.wdg_Comments.CommentBlockWidget import CommentBlockWidget
 from UI.UserTaskManager.wdg_Filters import FiltersBlockWidget, filtersBlockWidget_admin
 from UI.UserTaskManager.utils import treeDataUtils
@@ -82,12 +82,12 @@ class UserTaskWidget(QWidget):
 
         if self.userPosition == 'Supervisor':
             self.filtersBlock = FiltersBlockWidget.FiltersBlockWidget(self)
-            self.treeWidget = treeTaskList_supervisor.TreeTaskList_supervisor(self)
+            self.treeWidget = treeTaskList_admins.TreeTaskList_supervisor(self)
             self.activeButtons = activeButtons.activeButtons_supervisor(self, self.treeWidget)
 
         elif self.userPosition == 'Coordinator':
             self.filtersBlock = FiltersBlockWidget.FiltersBlockWidget(self)
-            self.treeWidget = treeTaskList_supervisor.TreeTaskList_supervisor(self)
+            self.treeWidget = treeTaskList_admins.TreeTaskList_coordinator(self)
             self.activeButtons = activeButtons.activeButtons_coordinator(self, self.treeWidget)
 
         else:
@@ -116,7 +116,10 @@ class UserTaskWidget(QWidget):
         return self.userServerCore.allUsers
 
     def getProcessList(self):
-        return self.userServerCore.processList
+        return self.userServerCore.activeProcessesList
+
+    def getProcessesData(self):
+        return self.userServerCore.processesData
 
     def getActiveProject(self):
         return self.userServerCore.activeProject.get('code')

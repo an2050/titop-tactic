@@ -147,7 +147,7 @@ def getNotesElement(elementSKey, taskData, notesData):
     return note
 
 
-def getProcessList(taskData):
+def getActiveProcessesList(taskData):
     def getChild(taskData, lst):
         for e in taskData:
             if e.get('children'):

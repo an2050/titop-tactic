@@ -98,7 +98,7 @@ class CommentBlockWidget(QWidget):
             print("You cannot delete other people's comments.")
             return
         sKey = commentItem.data(Qt.UserRole).get('sKey')
-        tacticPostUtils.deleteNote(self.taskManagerWdg.userServerCore.server, sKey, True)
+        tacticPostUtils.deleteSObject(self.taskManagerWdg.userServerCore.server, sKey, True)
         self.taskManagerWdg.refreshCommentData()
 
     def checkinNote(self, noteSkey, files):
