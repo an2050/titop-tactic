@@ -69,7 +69,8 @@ class TableCommentList(QTableWidget):
             self.setItem(idx, 2, item2)
             self.setItem(idx, 3, item3)
 
-        self.selectRow(0)
+        # self.selectRow(0)
+        self.setCurrentCell(-1, -1)
 
     def commentItemChanged(self, current, previous):
         if current is None:
