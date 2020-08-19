@@ -11,6 +11,10 @@ def getProjectFolder(keyPrjData):
     return getKeyPrjPath(keyPrjData, depthIndex=1, nameInclude=True)
 
 
+def getEpisodeFolder(keyPrjData):
+    return getKeyPrjPath(keyPrjData, depthIndex=2, nameInclude=True)
+
+
 def getDepth(keyPrjData):
     depth = filter(lambda x: x is not None, keyPrjData.values())
     depth = len(list(depth))

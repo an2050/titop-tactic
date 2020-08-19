@@ -1,6 +1,7 @@
 import sys
-import os
-sys.path.append(os.path.join(os.environ['CGPIPELINE'], "python", "python27", "lib", "site-packages"))
+# import os
+
+# sys.path.append(os.path.join(os.environ['CGPIPELINE'], "python", "python27", "lib", "site-packages"))
 from _lib import processVariables
 
 soft = sys.argv[1]

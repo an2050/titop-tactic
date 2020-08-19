@@ -80,15 +80,19 @@ class activeButtonsTM():
 
         currProject = self.taskManager.getActiveProject()
         keyPrjData = projectUtils.getKeyPrjData(currProject, selectedItem)
-        keyTaskData = projectUtils.getItemTaskData(selectedItem, keyPrjData)
-        keyPrjData = json.dumps(keyPrjData)
-        taskData = json.dumps(keyTaskData)
-        extraJobData = json.dumps(self.taskManager.collectExtraJobData(selectedItem))
+        taskData = projectUtils.getItemTaskData(selectedItem, keyPrjData)
+        extraJobData = self.taskManager.collectExtraJobData(selectedItem)
 
-        soft = '_nuke' if keyTaskData.get("task") == tctProcessElements['comp'] else 'houdini'
-        runArgs = [configUtils.py2exe, configUtils.starterPath] + [soft] + [keyPrjData] + [taskData] + [extraJobData]
+        inputData = {}
+        inputData['keyPrjData'] = keyPrjData
+        inputData['taskData'] = taskData
+        inputData['extraJobData'] = extraJobData
+        inputData = json.dumps(inputData).encode()
+
+        soft = '_nuke' if taskData.get("task") == tctProcessElements['comp'] else 'houdini'
+        runArgs = [configUtils.py2exe, configUtils.starterPath] + [soft]
         if self.autoInProgressStatus(selectedItem):
-            subprocess.Popen(runArgs, shell=True)
+            subprocess.run(runArgs, input=inputData)
             self.taskManager.refreshTaskData()
 
 

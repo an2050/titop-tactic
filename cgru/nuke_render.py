@@ -2,6 +2,8 @@ import os
 import sys
 
 sys.path.append(os.path.join(os.environ['CGPIPELINE'], "wrapper"))
+sys.path.append(os.path.join(os.environ['CGPIPELINE'], "_lib"))
+
 import _nuke
 
 

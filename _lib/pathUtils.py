@@ -4,7 +4,7 @@ from _lib import keyDataProjectUtils, exceptionUtils
 
 
 padding = 3
-version = "0".zfill(padding)
+version = "1".zfill(padding)
 
 
 # otlPaths = [{"OTLPath_prj": "{projectName}\\_ASSETS\\{assetName}\\hda"},
@@ -59,7 +59,7 @@ def getPRM_Path(keyPrjData):
 def getHires_Path(keyPrjData, version=None):
     version = None if version is False else version
     depth = keyDataProjectUtils.getDepth(keyPrjData)
-    if depth < 3:  # if the depth is less than 3, then this is not a shot and it haven't HiRes
+    if depth < 3:  # if the depth is less than 3, then this is not a shot and it haven't HiRes.
         print("expected shot data")
         return
 
@@ -134,6 +134,7 @@ def createFileName(keyPrjData, taskData, ver=None, ext="hip"):
 
     depth = keyDataProjectUtils.getDepth(keyPrjData) - 1
     keyItem = keyPrjData.get(list(keyPrjData.keys())[depth])
+
     assetName = taskData.get('assetName')
     fileName = "{}_{}_v{}.{}".format(keyItem, assetName, ver, ext)
     return fileName

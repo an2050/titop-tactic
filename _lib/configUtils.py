@@ -2,6 +2,7 @@ import os
 import sys
 import json
 
+firstFrame = 1001
 
 tacticAssetsPath = "//fed_TACTIC"
 
@@ -12,9 +13,11 @@ py2exe = os.path.join(pythonDir, "python27", "python.exe")
 
 starterPath = os.path.join(rootPath, "starter.py")
 starter_hythonPath = os.path.join(rootPath, "_lib", "hou_lib", "starter_hython.cmd")
+# starter_nkythonPath = os.path.join(rootPath, "_lib", "nk_lib", "initNKScene.py")
 
 projectStructureConfigFile = os.path.join(rootPath, "config", "projectStructure.json")
 mainProjectConfigFile = os.path.join(rootPath, "config_main.json")
+nukeConfigFile = os.path.join(rootPath, "config_nk.json")
 templateConfigFile = os.path.join(rootPath, "config_template.json")
 activeProjectsFile = os.path.join(rootPath, "activeProjects.json")
 

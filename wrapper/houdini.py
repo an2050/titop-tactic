@@ -51,23 +51,36 @@ def getAllEnvironmentVariables(keyPrjPathsList, systemVars=True, renderEngine=No
 
 
 # ================= START SCRIPT =============================
+
 if "starter.py" in sys.argv[0]:
 
     hipFile = ""
 
-    try:
-        keyPrjData = json.loads(sys.argv[2])
-        keyPrjData = OrderedDict(sorted(keyPrjData.items(), key=lambda x: len(x[0]), reverse=True))
-    except IndexError:
-        keyPrjData = {}
-    try:
-        taskData = json.loads(sys.argv[3])
-    except IndexError:
-        taskData = None
-    try:
-        extraJobData = json.loads(sys.argv[4])
-    except IndexError:
-        extraJobData = None
+    keyPrjData = dict()
+    taskData = None
+    extraJobData = None
+
+    if not sys.stdin.isatty():
+        args = sys.stdin.readline().decode("utf-8")
+        args = json.loads(args)
+
+        keyPrjData = args.get('keyPrjData') if args.get('keyPrjData') else dict()
+        taskData = args.get('taskData') if args.get('taskData') else None
+        extraJobData = args.get('extraJobData') if args.get('extraJobData') else None
+
+    # try:
+    #     keyPrjData = json.loads(sys.argv[2])
+    #     keyPrjData = OrderedDict(sorted(keyPrjData.items(), key=lambda x: len(x[0]), reverse=True))
+    # except IndexError:
+    #     keyPrjData = {}
+    # try:
+    #     taskData = json.loads(sys.argv[3])
+    # except IndexError:
+    #     taskData = None
+    # try:
+    #     extraJobData = json.loads(sys.argv[4])
+    # except IndexError:
+    #     extraJobData = None
 
     keyPrjPathsList = []
     # ================ GET CONFIG PATHS ==========================
