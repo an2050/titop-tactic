@@ -51,6 +51,7 @@ def setupFromMasterScirpt(keyPrjData, extraJobData, nkFile, masterScriptPath):
     prmReadNode = setupPrmReadNode(keyPrjData)
     setupDliesReadNode(dliesWriteNode, prmReadNode)
 
+    print("EXTRA JOB DATA = ", extraJobData)
     setFrameRange(extraJobData.get('frames'), root)
     saveInitNkScript(nkFile)
 
@@ -76,10 +77,10 @@ def setupSrcReadNode(keyPrjData):
     srcPath = pathUtils.getSRC_Path(keyPrjData)
     if not os.path.exists(srcPath):
         print("=> SRC Erorr: the path not found {}".format(srcPath))
-        return
+        return nuke.toNode(srcReadName)
     seq = sequenceUtils.getSequecneRepresentation(os.listdir(srcPath), countType='nuke')
     if not seq:
-        return
+        return nuke.toNode(srcReadName)
 
     seqRepr = list(seq.keys())[0]
     seqFile = seq.get(seqRepr)
@@ -117,6 +118,8 @@ def setupHresWriteNode(keyPrjData, srcReadName):
     hresWriteNode = nuke.toNode(hresWriteName)
     hresWriteNode['file'].setValue(hresPath)
     hresWriteNode['frame_mode'].setValue(1)
+    print('hresWriteNode = ', hresWriteNode)
+    print('srcReadName = ', srcReadName)
     hresWriteNode['frame'].setValue(str(srcReadName['first'].value()))
 
 
@@ -181,14 +184,14 @@ def setupPrmReadNode(keyPrjData):
         catalogList = os.listdir(path)
     except FileNotFoundError:
         print("=> PRM Error: Folder does not exists! : {}".format(path))
-        return
+        return nuke.toNode(prmReadName)
 
     shotName = keyPrjData.get('shot')
     prmList = ["/".join([path, file]) for file in catalogList if file.lower().find(shotName.lower()) >= 0]
 
     if len(prmList) == 0:
         print("=> PRM Error: prm not found for shot {}!".format(shotName))
-        return
+        return nuke.toNode(prmReadName)
 
     prm = prmList.pop()
     readNode = nuke.toNode(prmReadName)

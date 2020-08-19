@@ -12,8 +12,8 @@ tacticConfigFile = configUtils.tacticConfigFile
 styleCSS = "/".join([configUtils.rootPath, "UI", "css", "style.css"])
 crPath = Path(__file__).parent / "cr.json"
 
-class CredentialDialog(QDialog):
 
+class CredentialDialog(QDialog):
     def __init__(self, parent=None):
         super(CredentialDialog, self).__init__(parent)
         self.setStyleSheet(open(styleCSS).read())
@@ -45,6 +45,7 @@ class CredentialDialog(QDialog):
         self.userPasswordLable = QLabel(self)
         self.userPasswordLable.setText("Password")
         self.userPasswordField = QLineEdit(self)
+        self.userPasswordField.setEchoMode(QLineEdit.Password)
 
         self.btnOK = QPushButton("OK")
         self.btnClose = QPushButton("Close")

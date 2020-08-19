@@ -196,7 +196,7 @@ class TreeTaskList(QTreeWidget):
 
     def getComboboxItem(self, item):
         if item.data(0, Qt.UserRole).find("task") >= 0:
-            userList = [user.get('login') for user in self.allUsers] + [self.noUser]
+            userList = [user.get('login') for user in self.allUsers if user.get('user_position') != 'Coordinator'] + [self.noUser]
             assignedUser = item.data(1, Qt.UserRole)
             if assignedUser is None or assignedUser not in userList:
                 assignedUser = self.noUser

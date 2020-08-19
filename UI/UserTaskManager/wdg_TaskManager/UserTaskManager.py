@@ -226,10 +226,10 @@ class UserTaskWidget(QWidget):
         searchKey = selectedItem.parent().data(0, Qt.UserRole)
         currentElementData = tacticDataProcess.getTaskElementBySearchField(self.userServerCore.taskData, "__search_key__", searchKey)
         framesCount = currentElementData.get('frames_count')
-        if not framesCount:
-            return 100
-        else:
-            return framesCount
+        return framesCount
+        # if not framesCount:
+        #     return 100
+        # else:
 
 
 if __name__ == "__main__":

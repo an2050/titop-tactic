@@ -4,7 +4,7 @@ import json
 
 firstFrame = 1001
 
-tacticAssetsPath = "//fed_TACTIC"
+tacticAssetsPath = r"\\\\192.168.1.102"
 
 rootPath = os.environ['CGPIPELINE']
 

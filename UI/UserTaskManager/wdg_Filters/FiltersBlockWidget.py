@@ -129,7 +129,7 @@ class FiltersBlockWidget(QWidget):
 
     def setUserList_comboBox(self):
         allUsers = self.taskManagerWdg.getAllPrjUsers()
-        userList = ["--no filter"] + [user.get('login') for user in allUsers]
+        userList = ["--no filter"] + [user.get('login') for user in allUsers if user.get('user_position') != 'Coordinator']
         self.taskManagerWdg.clearCombobBoxWidgetList(self.filterUser_comboBox)
         self.filterUser_comboBox.addItems(userList)
 
