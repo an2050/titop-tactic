@@ -2,9 +2,11 @@ import os
 import sys
 import json
 
+configFilesPath = r"r:/pipeline/bin"
+
 firstFrame = 1001
 
-tacticAssetsPath = r"\\\\192.168.1.102"
+tacticAssetsPath = r"//192.168.1.102"
 
 rootPath = os.environ['CGPIPELINE']
 
@@ -13,17 +15,22 @@ py2exe = os.path.join(pythonDir, "python27", "python.exe")
 
 starterPath = os.path.join(rootPath, "starter.py")
 starter_hythonPath = os.path.join(rootPath, "_lib", "hou_lib", "starter_hython.cmd")
-# starter_nkythonPath = os.path.join(rootPath, "_lib", "nk_lib", "initNKScene.py")
 
-projectStructureConfigFile = os.path.join(rootPath, "config", "projectStructure.json")
-mainProjectConfigFile = os.path.join(rootPath, "config_main.json")
-nukeConfigFile = os.path.join(rootPath, "config_nk.json")
-templateConfigFile = os.path.join(rootPath, "config_template.json")
+mainProjectConfigFile = os.path.join(configFilesPath, "config_main.json")
+nukeConfigFile = os.path.join(configFilesPath, "config_nk.json")
+projectStructureConfigFile = os.path.join(configFilesPath, "config", "projectStructure.json")
+templateConfigFile = os.path.join(configFilesPath, "config_template.json")
+
+# mainProjectConfigFile = os.path.join(rootPath, "config_main.json")
+# nukeConfigFile = os.path.join(rootPath, "config_nk.json")
+# projectStructureConfigFile = os.path.join(rootPath, "config", "projectStructure.json")
+# templateConfigFile = os.path.join(rootPath, "config_template.json")
+
 activeProjectsFile = os.path.join(rootPath, "activeProjects.json")
 
 rvPlayerPath = 'C:/Program Files/Shotgun/RV-7.8.0/bin'
 
-tacticConfigFile = os.path.join(rootPath, "tactic", "tacticConfig.json")
+# tacticConfigFile = os.path.join(rootPath, "tactic", "tacticConfig.json")
 
 tacticKeyElements = {"episode": "episode", "shot": "shot"}  # # Items that match the names in TACTIC
 tacticAssetElement = {"asset": "asset"}

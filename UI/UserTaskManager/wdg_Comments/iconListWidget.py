@@ -6,7 +6,7 @@ from PySide2.QtGui import QIcon
 
 from UI.Dialogs import simpleDialogs
 
-availableExt = [".jpg", ".jpeg", ".png", ".tif", ".tiff", ".tga", ".bmp", ".gif", ".exr", ".dpx", ".raw"]
+availableExt = [".jpg", ".jpeg", ".png", ".tif", ".tiff", ".tga", ".bmp", ".gif", ".exr", ".dpx", ".raw", ".mov", ".mp4"]
 
 
 class IconListWidget(QListWidget):
@@ -29,6 +29,7 @@ class IconListWidget(QListWidget):
             if file in currList:
                 continue
             item = QListWidgetItem(self)
+            item.setText(os.path.basename(file))
             item.setIcon(QIcon(file))
             item.setData(Qt.UserRole, file)
             tempCatalogs += [os.path.dirname(file)] if isTemp else []
@@ -89,4 +90,5 @@ class IconListWidget(QListWidget):
                 files += _files
         else:
             files.append(path)
+
         return filter(lambda x: os.path.splitext(x)[1] in availableExt, files)

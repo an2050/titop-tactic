@@ -7,7 +7,7 @@ sys.path = list(set(sys.path + [os.path.join(os.environ['CGPIPELINE'])]))
 from pathlib import Path
 from _lib import configUtils
 
-tacticConfigFile = configUtils.tacticConfigFile
+# tacticConfigFile = configUtils.tacticConfigFile
 
 styleCSS = "/".join([configUtils.rootPath, "UI", "css", "style.css"])
 crPath = Path(__file__).parent / "cr.json"
