@@ -4,13 +4,14 @@ import json
 
 firstFrame = 1001
 
-configFilesPath = r"//192.168.1.11/Storage/pipeline/bin"
+serverPipelinePath = r"//192.168.1.11/Storage/pipeline"
+configFilesPath = serverPipelinePath + "/bin/config"
 tacticAssetsPath = r"//192.168.1.102"
 
-rootPath = os.environ['CGPIPELINE']
 cgHomePath = os.path.abspath(os.environ['CGPIPELINE'] + "/..")
+rootPath = os.environ['CGPIPELINE']
 
-
+synchScript = os.environ['CGPIPELINE'] + "synk/synch.cmd"
 pythonDir = os.path.join(rootPath, "python")
 py2exe = os.path.join(pythonDir, "python27", "python.exe")
 

@@ -91,11 +91,10 @@ class UserTaskWidget(QWidget):
             self.activeButtons = activeButtons.activeButtons_coordinator(self, self.treeWidget)
 
         else:
-            self.filtersBlock = filtersBlockWidget_admin.FiltersBlockWidget_admin(self)
-            self.treeWidget = treeTaskList.TreeTaskList(self)
-            self.activeButtons = activeButtons.activeButtons_artist(self, self.treeWidget)
 
-            self.mainWindow.menuBar.setVisible(False)
+            self.mainWindow.fileMenu.setEnabled(False)
+            self.mainWindow.act_projectStruct.setVisible(False)
+            # self.mainWindow.menuBar.setVisible(False)
 
     def initializeWidgetData(self):
         self.treeWidget.clear()

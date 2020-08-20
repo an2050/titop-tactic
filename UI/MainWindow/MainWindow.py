@@ -31,6 +31,7 @@ class MainWindowWidget(QMainWindow):
         # Action NewProject
         self.act_newProject = self.fileMenu.addAction("New Project", self.createNewProject)
         self.act_projectStruct = self.settingsMenu.addAction("Project structure", self.openProjectStructure)
+        self.act_udate = self.settingsMenu.addAction("Udate", self.openUpdateDialog)
         self.setMenuBar(self.menuBar)
 
         # ============ CENTRAL WIDGET ====================
@@ -49,6 +50,9 @@ class MainWindowWidget(QMainWindow):
     def openProjectStructure(self):
         prjSturctureDialog = PrjSturctureDialog.ProjectStructureDialog(self)
         prjSturctureDialog.exec_()
+
+    def openUpdateDialog(self):
+        pass
 
 
 if __name__ == "__main__":
