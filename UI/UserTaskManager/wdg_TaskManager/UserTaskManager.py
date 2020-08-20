@@ -1,4 +1,3 @@
-# import os
 from pathlib import Path
 
 from PySide2.QtWidgets import *
@@ -15,12 +14,7 @@ from _lib.tactic_lib import tacticServerData, tacticDataProcess
 from . import rvButtons
 from . import activeButtons
 
-taskManagerConfigFile = Path(__file__).parent / "config.json"
-# styleCSS = Path(__file__).parent.parent.parent / "css" / "style.css"
-# tacticConfigFile = configUtils.tacticConfigFile
-
-# pythonExe = os.path.join(configUtils.pythonDir, "python27", "python.exe")
-# starterPath = [pythonExe, configUtils.starterPath]
+taskManagerConfigFile = Path(__file__).parent.parent / "config.json"
 
 
 class UserTaskWidget(QWidget):

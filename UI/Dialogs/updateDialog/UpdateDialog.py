@@ -1,27 +1,14 @@
 import os
-import sys
-from subprocess import run, Popen
-# import re
-# import shutil
+from subprocess import run
 from PySide2.QtWidgets import *
-
-sys.path = list(set(sys.path + [os.path.join(os.environ['CGPIPELINE'])]))
-
-# from _lib.tactic_lib import tacticPostUtils
 
 from _lib import configUtils
 from UI.Dialogs import wdg_utils
-# from UI.Dialogs.parserExcelDialog import ParserExcelDataWidget
-# from . import headerProjectWidget
-
-# synchScript = configUtils.synchScript
 
 
 class UpdateDialog(QDialog):
     def __init__(self, parent=None):
         super(UpdateDialog, self).__init__(parent)
-
-        # self.setMinimumSize(360, 240)
 
         self.lay_main = QVBoxLayout()
         self.setLayout(self.lay_main)
@@ -29,7 +16,6 @@ class UpdateDialog(QDialog):
         self.groupBox = QGroupBox()
         self.lay_groupBox = QVBoxLayout()
         self.groupBox.setLayout(self.lay_groupBox)
-
 
 # ====================== WIDGETS ===============================
         self.mainUpdateLable = QLabel("    Main Update")
@@ -73,25 +59,19 @@ class UpdateDialog(QDialog):
 
         lcNukeModule = os.path.abspath(os.path.join(lcPipeline, 'nuke'))
         lcHouidniModule = os.path.abspath(os.path.join(lcPipeline, 'houdini'))
-        lcPythonModule = os.path.abspath(os.path.join(lcPipeline, 'python'))
+        lcPythonModule = os.path.abspath(os.path.join(lcPipeline, 'bin', 'python'))
 
         if self.mainUpdateCheckBox.isChecked():
-            run(["robocopy", serverPipelinePath, lcPipeline, '/MIR', '/XD', srvNukeModule, srvhoudiniModule, srvPythonModule])
+            run(['robocopy', serverPipelinePath, lcPipeline, '/MIR', '/XD', srvNukeModule, srvhoudiniModule, srvPythonModule, '.git', '__pycache__',
+                                                             '/XF', '*.pyc', '/XA:SH', '/MT', '/Z'])
 
         if self.nukeModuleUpdateCheckBox.isChecked():
-            run(["robocopy", srvNukeModule, lcNukeModule, '/MIR'])
+            run(['robocopy', srvNukeModule, lcNukeModule, '/MIR', '/XD', '__pycache__', '/XF', '*.pyc', '/MT', '/Z'])
 
         if self.houdiniModueUpdateCheckBox.isChecked():
-            run(["robocopy", srvhoudiniModule, lcHouidniModule, '/MIR'])
+            run(['robocopy', srvhoudiniModule, lcHouidniModule, '/MIR', '/XD', '__pycache__', '/XF', '*.pyc', '/MT', '/Z'])
 
         if self.pythonModuleUpdateCheckBox.isChecked():
-            run(["robocopy", srvPythonModule, lcPythonModule, '/MIR'])
+            run(['robocopy', srvPythonModule, lcPythonModule, '/MIR', '/XD', '__pycache__', '/XF', '*.pyc', '/MT', '/Z'])
 
         self.accept()
-
-if __name__ == "__main__":
-    app = QApplication()
-    MainWindowWidget = UpdateDialog()
-    MainWindowWidget.show()
-
-    app.exec_()
