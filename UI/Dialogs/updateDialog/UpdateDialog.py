@@ -69,14 +69,27 @@ class UdateDialog(QDialog):
         self.accept()
 
         if self.mainUpdateCheckBox.isChecked():
-            src = serverPipelinePath
-            dst = 
+            lcPipeline = os.path.abspath(configUtils.rootPath + "/..")  # local/pipeline
+
+            src = serverPipelinePath  # server/pipeline
+            dst = lcPipeline
+            nukeModule = os.path.join(serverPipelinePath, 'nuke')
+            houdiniModule = os.path.join(serverPipelinePath, 'houdini')
+            pythonModule = os.path.join(serverPipelinePath, 'bin', 'python')
+
+            rcjob = f"{src} {dst} /MIR /XD {nukeModule} {houdiniModule} {pythonModule}"
+            print(rcjob)
+            # xd = "/".join([lcPipeline])
+
+            print('SRC =', src)
+            print('DST =', dst)
             pass
         if self.nukeModuleUpdateCheckBox.isChecked():
+
             pass
-        if self.houdiniModueUpdateLable.isChecked():
+        if self.houdiniModueUpdateCheckBox.isChecked():
             pass
-        if self.pythonModuleUpdateLable.isChecked():
+        if self.pythonModuleUpdateCheckBox.isChecked():
             pass
 
 

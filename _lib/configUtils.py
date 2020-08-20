@@ -11,7 +11,7 @@ tacticAssetsPath = r"//192.168.1.102"
 cgHomePath = os.path.abspath(os.environ['CGPIPELINE'] + "/..")
 rootPath = os.environ['CGPIPELINE']
 
-synchScript = os.environ['CGPIPELINE'] + "synk/synch.cmd"
+synchScript = os.environ['CGPIPELINE'] + "synch/synch.cmd"
 pythonDir = os.path.join(rootPath, "python")
 py2exe = os.path.join(pythonDir, "python27", "python.exe")
 
