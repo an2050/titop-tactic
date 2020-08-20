@@ -2,13 +2,14 @@ import os
 import sys
 import json
 
-configFilesPath = r"r:/pipeline/bin"
-
 firstFrame = 1001
 
+configFilesPath = r"//192.168.1.11/Storage/pipeline/bin"
 tacticAssetsPath = r"//192.168.1.102"
 
 rootPath = os.environ['CGPIPELINE']
+cgHomePath = os.path.abspath(os.environ['CGPIPELINE'] + "/..")
+
 
 pythonDir = os.path.join(rootPath, "python")
 py2exe = os.path.join(pythonDir, "python27", "python.exe")
@@ -16,17 +17,17 @@ py2exe = os.path.join(pythonDir, "python27", "python.exe")
 starterPath = os.path.join(rootPath, "starter.py")
 starter_hythonPath = os.path.join(rootPath, "_lib", "hou_lib", "starter_hython.cmd")
 
-mainProjectConfigFile = os.path.join(configFilesPath, "config_main.json")
-nukeConfigFile = os.path.join(configFilesPath, "config_nk.json")
+mainProjectConfigFile = os.path.join(configFilesPath, "config", "config_main.json")
+nukeConfigFile = os.path.join(configFilesPath, "config", "config_nk.json")
 projectStructureConfigFile = os.path.join(configFilesPath, "config", "projectStructure.json")
-templateConfigFile = os.path.join(configFilesPath, "config_template.json")
+templateConfigFile = os.path.join(configFilesPath, "config", "config_template.json")
 
-# mainProjectConfigFile = os.path.join(rootPath, "config_main.json")
-# nukeConfigFile = os.path.join(rootPath, "config_nk.json")
+# mainProjectConfigFile = os.path.join(rootPath, "config", "config_main.json")
+# nukeConfigFile = os.path.join(rootPath, "config", "config_nk.json")
 # projectStructureConfigFile = os.path.join(rootPath, "config", "projectStructure.json")
-# templateConfigFile = os.path.join(rootPath, "config_template.json")
+# templateConfigFile = os.path.join(rootPath, "config", "config_template.json")
 
-activeProjectsFile = os.path.join(rootPath, "activeProjects.json")
+activeProjectsFile = os.path.join(rootPath, "config", "activeProjects.json")
 
 rvPlayerPath = 'C:/Program Files/Shotgun/RV-7.8.0/bin'
 

@@ -35,7 +35,7 @@ def getKeyPrjPath(keyPrjData, depthIndex=None, nameInclude=False):
     template = template[::-1][depthIndex]
 
     path = template.format(projectName=keyPrjData['project'], episodName=keyPrjData['episod'], shotName=keyPrjData['shot'])
-    return path.strip("/")
+    return path.rstrip("/")
 
 
 def collapseToKeyPrjData(path):

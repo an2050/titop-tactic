@@ -3,12 +3,10 @@ import sys
 import re
 import json
 import subprocess
-from collections import OrderedDict
 import configUtils
 import keyDataProjectUtils
 from _lib import pathUtils
 from hou_lib import transferToHython
-# import processVariables
 
 
 def processUserVariables(allEnvironmentVariables):
@@ -38,6 +36,9 @@ def getAllEnvironmentVariables(keyPrjPathsList, systemVars=True, renderEngine=No
     if systemVars:
         initSystemEnvs = processVariables.getInitSystemEnvs()
         allEnvironmentVariables = configUtils.merge_two_dicts(initSystemEnvs, allEnvironmentVariables)
+
+    if allEnvironmentVariables.get('CGHOME') == 'local' or allEnvironmentVariables.get('CGHOME') is None:
+        allEnvironmentVariables['CGHOME'] = configUtils.cgHomePath
 
     allEnvironmentVariables = configUtils.decodeDict(allEnvironmentVariables)
     processUserVariables(allEnvironmentVariables)
