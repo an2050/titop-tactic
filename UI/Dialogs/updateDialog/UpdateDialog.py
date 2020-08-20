@@ -1,5 +1,6 @@
 import os
 import sys
+from subprocess import run, Popen
 # import re
 # import shutil
 from PySide2.QtWidgets import *
@@ -13,13 +14,12 @@ from UI.Dialogs import wdg_utils
 # from UI.Dialogs.parserExcelDialog import ParserExcelDataWidget
 # from . import headerProjectWidget
 
-serverPipelinePath = configUtils.serverPipelinePath
-synchScript = configUtils.synchScript
+# synchScript = configUtils.synchScript
 
 
-class UdateDialog(QDialog):
+class UpdateDialog(QDialog):
     def __init__(self, parent=None):
-        super(UdateDialog, self).__init__(parent)
+        super(UpdateDialog, self).__init__(parent)
 
         # self.setMinimumSize(360, 240)
 
@@ -60,43 +60,38 @@ class UdateDialog(QDialog):
         self.btnUdate.clicked.connect(self.update)
         self.btnCancel.clicked.connect(self.reject)
 
-
         self.lay_main.addWidget(self.groupBox)
         self.lay_main.addLayout(self.lay_btns)
 
     def update(self):
-        print("Update")
-        self.accept()
+        serverPipelinePath = configUtils.serverPipelinePath  # storage/pipeline
+        lcPipeline = os.path.abspath(configUtils.rootPath + "/..")  # local/pipeline
+
+        srvNukeModule = os.path.abspath(os.path.join(serverPipelinePath, 'nuke'))
+        srvhoudiniModule = os.path.abspath(os.path.join(serverPipelinePath, 'houdini'))
+        srvPythonModule = os.path.abspath(os.path.join(serverPipelinePath, 'bin', 'python'))
+
+        lcNukeModule = os.path.abspath(os.path.join(lcPipeline, 'nuke'))
+        lcHouidniModule = os.path.abspath(os.path.join(lcPipeline, 'houdini'))
+        lcPythonModule = os.path.abspath(os.path.join(lcPipeline, 'python'))
 
         if self.mainUpdateCheckBox.isChecked():
-            lcPipeline = os.path.abspath(configUtils.rootPath + "/..")  # local/pipeline
+            run(["robocopy", serverPipelinePath, lcPipeline, '/MIR', '/XD', srvNukeModule, srvhoudiniModule, srvPythonModule])
 
-            src = serverPipelinePath  # server/pipeline
-            dst = lcPipeline
-            nukeModule = os.path.join(serverPipelinePath, 'nuke')
-            houdiniModule = os.path.join(serverPipelinePath, 'houdini')
-            pythonModule = os.path.join(serverPipelinePath, 'bin', 'python')
-
-            rcjob = f"{src} {dst} /MIR /XD {nukeModule} {houdiniModule} {pythonModule}"
-            print(rcjob)
-            # xd = "/".join([lcPipeline])
-
-            print('SRC =', src)
-            print('DST =', dst)
-            pass
         if self.nukeModuleUpdateCheckBox.isChecked():
+            run(["robocopy", srvNukeModule, lcNukeModule, '/MIR'])
 
-            pass
         if self.houdiniModueUpdateCheckBox.isChecked():
-            pass
+            run(["robocopy", srvhoudiniModule, lcHouidniModule, '/MIR'])
+
         if self.pythonModuleUpdateCheckBox.isChecked():
-            pass
+            run(["robocopy", srvPythonModule, lcPythonModule, '/MIR'])
 
-
+        self.accept()
 
 if __name__ == "__main__":
     app = QApplication()
-    MainWindowWidget = UdateDialog()
+    MainWindowWidget = UpdateDialog()
     MainWindowWidget.show()
 
     app.exec_()

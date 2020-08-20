@@ -8,6 +8,7 @@ sys.path = list(set(sys.path + [os.path.join(os.environ['CGPIPELINE'])]))
 
 from UI.Dialogs.newProjectDialog import CreateNewProjectDialog
 from UI.Dialogs.prjStructureDialog import PrjSturctureDialog
+from UI.Dialogs.updateDialog import UpdateDialog
 
 from UI.UserTaskManager.wdg_TaskManager.UserTaskManager import UserTaskWidget
 
@@ -39,11 +40,10 @@ class MainWindowWidget(QMainWindow):
         self.setCentralWidget(self.centralTaskManager)
 
     def createNewProject(self):
-        # login = self.userServerCore.userData[0].get("login")
         admin = self.userServerCore.isAdmin
         if not admin:
             return
-        # templateProjectList = self.userServerCore.getTemplateProjectList()
+
         createProjectDialog = CreateNewProjectDialog.NewProjectDialog(self, self.userServerCore)
         createProjectDialog.exec_()
 
@@ -52,6 +52,8 @@ class MainWindowWidget(QMainWindow):
         prjSturctureDialog.exec_()
 
     def openUpdateDialog(self):
+        updateDialogWidget = UpdateDialog.UpdateDialog(self)
+        updateDialogWidget.exec_()
         pass
 
 

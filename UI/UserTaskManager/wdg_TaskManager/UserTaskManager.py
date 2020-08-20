@@ -92,6 +92,10 @@ class UserTaskWidget(QWidget):
 
         else:
 
+            self.filtersBlock = filtersBlockWidget_admin.FiltersBlockWidget_admin(self)
+            self.treeWidget = treeTaskList.TreeTaskList(self)
+            self.activeButtons = activeButtons.activeButtons_artist(self, self.treeWidget)
+
             self.mainWindow.fileMenu.setEnabled(False)
             self.mainWindow.act_projectStruct.setVisible(False)
             # self.mainWindow.menuBar.setVisible(False)
