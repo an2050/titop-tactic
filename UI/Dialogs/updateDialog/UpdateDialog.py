@@ -56,20 +56,24 @@ class UpdateDialog(QDialog):
         srvNukeModule = os.path.abspath(os.path.join(serverPipelinePath, 'nuke'))
         srvhoudiniModule = os.path.abspath(os.path.join(serverPipelinePath, 'houdini'))
         srvPythonModule = os.path.abspath(os.path.join(serverPipelinePath, 'bin', 'python'))
+        srvCGRUModule = os.path.abspath(os.path.join(serverPipelinePath, 'cgru*'))
 
         lcNukeModule = os.path.abspath(os.path.join(lcPipeline, 'nuke'))
         lcHouidniModule = os.path.abspath(os.path.join(lcPipeline, 'houdini'))
         lcPythonModule = os.path.abspath(os.path.join(lcPipeline, 'bin', 'python'))
+        lcCGRUModule = os.path.abspath(os.path.join(lcPipelinePath, 'cgru*'))
 
         if self.mainUpdateCheckBox.isChecked():
-            run(['robocopy', serverPipelinePath, lcPipeline, '/MIR', '/XD', srvNukeModule, srvhoudiniModule, srvPythonModule, '.git', '__pycache__',
+            run(['robocopy', serverPipelinePath, lcPipeline, '/MIR', '/XD', srvNukeModule, srvhoudiniModule, srvPythonModule, srvCGRUModule, '.git', '__pycache__',
                                                              '/XF', '*.pyc', '*SUBLIME*', '/XA:SH', '/MT', '/Z'])
 
         if self.nukeModuleUpdateCheckBox.isChecked():
             run(['robocopy', srvNukeModule, lcNukeModule, '/MIR', '/XD', '__pycache__', '/XF', '*.pyc', '/MT', '/Z'])
+            run(['robocopy', srvCGRUModule, lcCGRUModule, '/MIR', '/XD', '__pycache__', '/XF', '*.pyc', '/MT', '/Z'])
 
         if self.houdiniModueUpdateCheckBox.isChecked():
             run(['robocopy', srvhoudiniModule, lcHouidniModule, '/MIR', '/XD', '__pycache__', '/XF', '*.pyc', '/MT', '/Z'])
+            run(['robocopy', srvCGRUModule, lcCGRUModule, '/MIR', '/XD', '__pycache__', '/XF', '*.pyc', '/MT', '/Z'])
 
         if self.pythonModuleUpdateCheckBox.isChecked():
             run(['robocopy', srvPythonModule, lcPythonModule, '/MIR', '/XD', '__pycache__', '/XF', '*.pyc', '/MT', '/Z'])

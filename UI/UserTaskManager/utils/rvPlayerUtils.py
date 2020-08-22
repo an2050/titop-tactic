@@ -3,8 +3,7 @@ import json
 from subprocess import Popen, PIPE
 
 from _lib import pathUtils, configUtils, sequenceUtils, exceptionUtils
-
-from UI.UserTaskManager.wdg_TreeTaskList.itemUtils import ItemUtils
+from UI.Dialogs import simpleDialogs
 from . import projectUtils
 
 
@@ -125,7 +124,17 @@ def collectSequencePath(paths):
 
 
 def runRvPlayer(paths, annotate=False):
-    rvplayer = "/".join([configUtils.rvPlayerPath, "rvpush.exe"])
+    rvPlayerFolder = configUtils.rvPlayerPath
+
+    expectedRVPath = rvPlayerFolder
+    while not os.path.exists(rvPlayerFolder):
+        dialog = simpleDialogs.PathFileDialog()
+        text = f'RV Player not found!. \nRecomended path is: "{expectedRVPath}". \nPlease select the RV Player folder'
+        rvPlayerFolder = dialog.showDialog(text)
+        if rvPlayerFolder is None:
+            return
+
+    rvplayer = "/".join([rvPlayerFolder, "bin", "rvpush.exe"])
     rvplayer = '"'.join(["", rvplayer, ""])
     paths = ['"' + path + '"' for path in paths]
     command = " ".join([rvplayer] + [" -tag target merge"] + paths)

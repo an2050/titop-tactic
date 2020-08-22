@@ -8,6 +8,8 @@ from _lib import keyDataProjectUtils
 from _lib import pathUtils
 from _lib.hou_lib import transferToHython
 
+from UI.Dialogs import simpleDialogs
+
 
 def processUserVariables(allEnvironmentVariables):
     for k, v in allEnvironmentVariables.items():
@@ -51,7 +53,17 @@ def getAllEnvironmentVariables(keyPrjPathsList, systemVars=True, renderEngine=No
     return allEnvironmentVariables
 
 
+def checkHoudiniLocation(houdiniLocation):
+    expectedHOU_Path = houdiniLocation
+    while not os.path.exists(houdiniLocation):
+        dialog = simpleDialogs.PathFileDialog()
+        text = 'Houdini not found!. \nRecomended path is: "{}". \nPlease select the hoiudini folder'.format(expectedHOU_Path)
+        houdiniLocation = dialog.showDialog(text)
+        if houdiniLocation is None:
+            return False
+    return houdiniLocation
 # ================= START SCRIPT =============================
+
 
 if "starter.py" in sys.argv[0]:
 
@@ -93,27 +105,29 @@ if "starter.py" in sys.argv[0]:
     # ================  GET VARIABLES ==========================
     allEnvironmentVariables = getAllEnvironmentVariables(keyPrjPathsList)
     houdiniLocation = allEnvironmentVariables['location'].format(ver=allEnvironmentVariables['version'])
+    houdiniLocation = checkHoudiniLocation(houdiniLocation)
 
-    # ================ BUILD HIP SCENE ===========================
-    if taskData is not None:
-        workPath = pathUtils.getWork_Path(keyPrjData, taskData, create=True)
-        hipName = pathUtils.createFileName(keyPrjData, taskData, ext="hip")
-        hipFile = "/".join([workPath, hipName])
-
-        if os.path.exists(hipFile) is False:
-            varsToPassList = ['HOUDINI_DIR', 'PRJ', 'EPISOD', 'SHOT', 'RENDER', 'RESX', "RESY", "FPS"]
-            varsToPass = dict([(k, allEnvironmentVariables.get(k)) for k in varsToPassList if allEnvironmentVariables.get(k) is not None])
-            transferToHython.buildHoudiniScene(hipFile, varsToPass, keyPrjPathsList, keyPrjData, taskData, extraJobData)
-        else:
-            hipName = pathUtils.getVersioinFile(hipFile, isFile=True, ext="hip", version=None)[0]
+    if houdiniLocation:
+        # ================ BUILD HIP SCENE ===========================
+        if taskData is not None:
+            workPath = pathUtils.getWork_Path(keyPrjData, taskData, create=True)
+            hipName = pathUtils.createFileName(keyPrjData, taskData, ext="hip")
             hipFile = "/".join([workPath, hipName])
 
-    # print(allEnvironmentVariables['HOUDINI_PATH'].replace(";", "\n"))
+            if os.path.exists(hipFile) is False:
+                varsToPassList = ['HOUDINI_DIR', 'PRJ', 'EPISOD', 'SHOT', 'RENDER', 'RESX', "RESY", "FPS"]
+                varsToPass = dict([(k, allEnvironmentVariables.get(k)) for k in varsToPassList if allEnvironmentVariables.get(k) is not None])
+                transferToHython.buildHoudiniScene(hipFile, varsToPass, keyPrjPathsList, keyPrjData, taskData, extraJobData)
+            else:
+                hipName = pathUtils.getVersioinFile(hipFile, isFile=True, ext="hip", version=None)[0]
+                hipFile = "/".join([workPath, hipName])
 
-    # ================  RUN HOUDINI ==========================
-    if houdiniLocation is not None and os.path.exists(houdiniLocation):
-        hipFile = [] if hipFile == "" else [hipFile]
-        houdiniCommand = [os.path.join(houdiniLocation, "bin", "houdini.exe")] + hipFile
-        subprocess.Popen(houdiniCommand, env=allEnvironmentVariables, shell=True)
-    else:
-        print("Wrong Houdini location path:", houdiniLocation)
+        # print(allEnvironmentVariables['HOUDINI_PATH'].replace(";", "\n"))
+
+        # ================  RUN HOUDINI ==========================
+        if houdiniLocation is not None and os.path.exists(houdiniLocation):
+            hipFile = [] if hipFile == "" else [hipFile]
+            houdiniCommand = [os.path.join(houdiniLocation, "bin", "houdini.exe")] + hipFile
+            subprocess.Popen(houdiniCommand, env=allEnvironmentVariables, shell=True)
+        else:
+            print("Wrong Houdini location path:", houdiniLocation)

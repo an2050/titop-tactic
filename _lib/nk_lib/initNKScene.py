@@ -119,8 +119,11 @@ def setupHresWriteNode(keyPrjData, srcReadName):
     hresWriteNode = nuke.toNode(hresWriteName)
     hresWriteNode['file'].setValue(hresPath)
     hresWriteNode['frame_mode'].setValue(2)
-    offset = srcReadName['first'].value() - int(srcReadName['frame'].value())
-    hresWriteNode['frame'].setValue(str(offset))
+    try:
+        offset = srcReadName['first'].value() - int(srcReadName['frame'].value())
+        hresWriteNode['frame'].setValue(str(offset))
+    except ValueError as err:
+        print(err)
 
 
 def setupHresReadNode(srcReadNode):

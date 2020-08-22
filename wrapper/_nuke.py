@@ -10,28 +10,42 @@ sys.path.append(os.environ['CGPIPELINE'])
 from _lib import configUtils, pathUtils
 
 from _lib.nk_lib import starter_nkython
+from UI.Dialogs import simpleDialogs
 
 nukeConfigFile = configUtils.nukeConfigFile
 
 
-def getNukeLocation():
+def getNukeLocation(afRender=False):
     ver = configUtils.loadConfigData(nukeConfigFile).get('version')
     nukeLocation = configUtils.loadConfigData(nukeConfigFile).get('location').format(ver=ver)
-    if not os.path.exists(nukeLocation):
-        print("=> Nuke location not found. Recomended path is: {}".format(nukeLocation))
-        return ""
-    else:
-        pattern = r'^Nuke\d{1,2}(\.\d{1,2}(\.\d{1,2})?)?\.exe$'
+
+    if afRender is False:
+        expectedNKPath = nukeLocation
+        while not os.path.exists(nukeLocation):
+            dialog = simpleDialogs.PathFileDialog()
+            text = 'Nuke not found!. \nRecomended path is: "{}". \nPlease select the Nuke folder'.format(expectedNKPath)
+            nukeLocation = dialog.showDialog(text)
+            if nukeLocation is None:
+                return None, None
+
+    pattern = r'^Nuke\d{1,2}(\.\d{1,2}(\.\d{1,2})?)?\.exe$'
+    try:
         nukeExe = list(filter(lambda x: re.search(pattern, x), os.listdir(nukeLocation)))[0]
+    except FileNotFoundError as err:
+        print('===> Nuke location not found!')
+        raise err
 
     return nukeLocation, nukeExe
 
 
-def setEnvironmentVariables(nukeLocationExe=None):
+def setEnvironmentVariables(nukeLocationExe=None, afRender=False):
     cgHomePath = configUtils.cgHomePath
 
     if nukeLocationExe is None:
-        nukeLocation, nukeExe = getNukeLocation()
+        nukeLocation, nukeExe = getNukeLocation(afRender)
+        if nukeLocation is None:
+            print('===> Nuke location not found!')
+            return
         nukeLocationExe = "/".join([nukeLocation, nukeExe])
 
     os.environ['NUKE_EXE'] = nukeLocationExe
@@ -43,13 +57,7 @@ def setEnvironmentVariables(nukeLocationExe=None):
     ptyhonAfPaths = ['afanasy/python', 'lib/python', 'plugins/nuke']
     os.environ["PYTHONPATH"] = ";".join(["/".join([os.environ.get('CGRU_LOCATION'), path]) for path in ptyhonAfPaths])
     os.environ["NUKE_CGRU_PATH"] = '/'.join([os.environ.get('CGRU_LOCATION'), 'plugins/nuke'])
-    # print("============================================")
-    # print("NUKE EXE ", os.environ['NUKE_EXE'])
-    # print("NUKE PATH", os.environ["NUKE_PATH"])
-    # print("PYTHONPATH", os.environ["PYTHONPATH"])
-    # print("CGRU_LOCATION", os.environ["CGRU_LOCATION"])
-    # print("NUKE_CGRU_PATH", os.environ["NUKE_CGRU_PATH"])
-    # print("============================================")
+
 
 def getNKFile(keyPrjData, taskData, extraJobData, nukeLocation):
 
@@ -71,23 +79,27 @@ if "starter.py" in sys.argv[0]:
 
     nkfile = ""
     nukeLocation, nukeExe = getNukeLocation()
-    nukeLocationExe = "/".join([nukeLocation, nukeExe])
 
-    setEnvironmentVariables(nukeLocationExe)
+    if nukeLocation:
 
-    if not sys.stdin.isatty():
-        args = sys.stdin.readline().decode("utf-8")
-        args = json.loads(args)
+        nukeLocationExe = "/".join([nukeLocation, nukeExe])
+        setEnvironmentVariables(nukeLocationExe)
 
-        keyPrjData = args.get('keyPrjData') if args.get('keyPrjData') else dict()
-        keyPrjData = OrderedDict(sorted(keyPrjData.items(), key=lambda x: len(x[0]), reverse=True))
-        taskData = args.get('taskData') if args.get('taskData') else dict()
-        extraJobData = args.get('extraJobData') if args.get('extraJobData') else dict()
+        if not sys.stdin.isatty():
+            args = sys.stdin.readline().decode("utf-8")
+            args = json.loads(args)
 
-        if keyPrjData and taskData:
-            nkfile = getNKFile(keyPrjData, taskData, extraJobData, nukeLocation)
+            keyPrjData = args.get('keyPrjData') if args.get('keyPrjData') else dict()
+            keyPrjData = OrderedDict(sorted(keyPrjData.items(), key=lambda x: len(x[0]), reverse=True))
+            taskData = args.get('taskData') if args.get('taskData') else dict()
+            extraJobData = args.get('extraJobData') if args.get('extraJobData') else dict()
 
-    nukeCommand = [nukeLocationExe, "--nukex", nkfile]
-    print("=> Starting NUKE process: ", nukeCommand)
-    subprocess.Popen(nukeCommand)
+            if keyPrjData and taskData:
+                nkfile = getNKFile(keyPrjData, taskData, extraJobData, nukeLocation)
+
+        nukeCommand = [nukeLocationExe, "--nukex", nkfile]
+        print("=> Starting NUKE process: ", nukeCommand)
+        subprocess.Popen(nukeCommand)
+    else:
+        print('===> Nuke location not found!')
 

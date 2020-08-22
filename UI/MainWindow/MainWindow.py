@@ -1,8 +1,6 @@
 import os
 import sys
-from pathlib import Path
 from PySide2.QtWidgets import *
-from PySide2.QtCore import Qt
 
 sys.path = list(set(sys.path + [os.environ.get('CGPIPELINE')]))
 
@@ -12,9 +10,10 @@ from UI.Dialogs.updateDialog import UpdateDialog
 
 from UI.UserTaskManager.wdg_TaskManager.UserTaskManager import UserTaskWidget
 
-from _lib.tactic_lib import tacticServerData  # , tacticPostUtils, tacticDataProcess
+from _lib.tactic_lib import tacticServerData
 
-styleCSS = Path(__file__).parent.parent / "css" / "style.css"
+from _lib import configUtils
+styleCSS = "/".join([configUtils.rootPath, "UI", "css", "style.css"])
 
 
 class MainWindowWidget(QMainWindow):

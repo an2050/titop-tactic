@@ -29,7 +29,7 @@ templateConfigFile = os.path.join(configFilesPath, "config_template.json")
 
 activeProjectsFile = os.path.join(rootPath, "config", "activeProjects.json")
 
-rvPlayerPath = 'C:/Program Files/Shotgun/RV-7.8.0/bin'
+rvPlayerPath = 'C:/Program Files/Shotgun/RV-7.8.0'
 
 # tacticConfigFile = os.path.join(rootPath, "tactic", "tacticConfig.json")
 
