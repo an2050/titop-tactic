@@ -4,7 +4,7 @@ from pathlib import Path
 from PySide2.QtWidgets import *
 from PySide2.QtCore import Qt
 
-sys.path = list(set(sys.path + [os.path.join(os.environ['CGPIPELINE'])]))
+sys.path = list(set(sys.path + [os.environ.get('CGPIPELINE')]))
 
 from UI.Dialogs.newProjectDialog import CreateNewProjectDialog
 from UI.Dialogs.prjStructureDialog import PrjSturctureDialog

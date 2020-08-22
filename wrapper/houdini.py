@@ -3,10 +3,10 @@ import sys
 import re
 import json
 import subprocess
-import configUtils
-import keyDataProjectUtils
+from _lib import configUtils
+from _lib import keyDataProjectUtils
 from _lib import pathUtils
-from hou_lib import transferToHython
+from _lib.hou_lib import transferToHython
 
 
 def processUserVariables(allEnvironmentVariables):
@@ -26,7 +26,7 @@ def getUserPatternValue(match, allEnvironmentVariables):
 
 
 def getAllEnvironmentVariables(keyPrjPathsList, systemVars=True, renderEngine=None):
-    import processVariables
+    from _lib import processVariables
 
     keyPrjPathsList = [os.path.join(x, "config.json") for x in keyPrjPathsList]
     keyPrjPathsList.insert(0, configUtils.mainProjectConfigFile)

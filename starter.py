@@ -1,5 +1,8 @@
 import sys
-# import os
+import os
+import tempfile
+
+os.chdir(tempfile.gettempdir())
 
 # sys.path.append(os.path.join(os.environ['CGPIPELINE'], "python", "python27", "lib", "site-packages"))
 from _lib import processVariables

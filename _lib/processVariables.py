@@ -1,7 +1,7 @@
 import os
 import json
-import configUtils
-from lib_widgets_ui import selectDialog
+from _lib import configUtils
+from _lib.lib_widgets_ui import selectDialog
 
 
 # def merge_two_dicts(d1, d2):

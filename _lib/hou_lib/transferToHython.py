@@ -1,6 +1,6 @@
 import json
 import subprocess
-import configUtils
+from _lib import configUtils
 
 
 def buildHoudiniScene(hipFile, envVars, keyPrjPathsList, keyPrjData, taskData, extraJobData):

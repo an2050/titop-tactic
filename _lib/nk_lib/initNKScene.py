@@ -4,6 +4,8 @@ import os
 import json
 import sys
 import re
+
+sys.path = list(set(sys.path + [os.environ.get('CGPIPELINE')]))
 from _lib import configUtils, pathUtils, sequenceUtils, keyDataProjectUtils
 
 nukeConfigFile = configUtils.nukeConfigFile
@@ -51,7 +53,6 @@ def setupFromMasterScirpt(keyPrjData, extraJobData, nkFile, masterScriptPath):
     prmReadNode = setupPrmReadNode(keyPrjData)
     setupDliesReadNode(dliesWriteNode, prmReadNode)
 
-    print("EXTRA JOB DATA = ", extraJobData)
     setFrameRange(extraJobData.get('frames'), root)
     saveInitNkScript(nkFile)
 
@@ -117,10 +118,9 @@ def setupHresWriteNode(keyPrjData, srcReadName):
 
     hresWriteNode = nuke.toNode(hresWriteName)
     hresWriteNode['file'].setValue(hresPath)
-    hresWriteNode['frame_mode'].setValue(1)
-    print('hresWriteNode = ', hresWriteNode)
-    print('srcReadName = ', srcReadName)
-    hresWriteNode['frame'].setValue(str(srcReadName['first'].value()))
+    hresWriteNode['frame_mode'].setValue(2)
+    offset = srcReadName['first'].value() - int(srcReadName['frame'].value())
+    hresWriteNode['frame'].setValue(str(offset))
 
 
 def setupHresReadNode(srcReadNode):
@@ -243,7 +243,8 @@ def initMasterScript(masterScriptPath, keyPrjData, extraJobData):
     srcReadNode = createReadNode(srcReadName, 'file not specified')
 
     # - hires writeNode
-    hresWriteNodeParms = [('file', 'file not specified'), ('create_directories', 1)]
+    afterRender = "import thread; rld = nuke.toNode('" + hresReadName + "')['reload']; thread.start_new_thread(rld.execute, ())"
+    hresWriteNodeParms = [('file', 'file not specified'), ('create_directories', 1), ('afterRender', afterRender)]
     hresWriteNode = createWriteNode(hresWriteName, hresWriteNodeParms)
     setPosUnderTheNode(hresWriteNode, srcReadNode, 800)
     hresWriteNode.setInput(0, srcReadNode)

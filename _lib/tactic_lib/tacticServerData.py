@@ -21,7 +21,7 @@ tacticAssetElement = configUtils.tacticAssetElement
 
 projectColumns = ["code", "title", "description", "status", "__search_key__"]
 episodColumns = ["code", "__search_key__", "search_code", "description", "name"]
-shotColumns = ["code", "__search_key__", "search_code", "description", "name", "episodes_code"]
+shotColumns = ["code", "__search_key__", "search_code", "description", "name", "episodes_code", "frames_count"]
 assetColumns = ["code", "__search_key__", "search_code", "description", "name", "episodes_code"]
 taskColums = ["code", "__search_key__", "search_code", "assigned", "description", "status", "process"]
 userColumns = ["code", "__search_key__", "login", "department", "user_position", "login_groups"]

@@ -154,7 +154,7 @@ def getVersioinFile(path, isFile=False, ext=None, version=None):
     if isFile:
         catalogList = list(filter(lambda x: os.path.isfile(os.path.join(catalog, x)), os.listdir(catalog)))
         ext = r"\w{2,4}$" if ext is None else ext
-        pattern = r"(?P<name>.+_v)(?P<ver>(?P<major>\d{1,3})([\._](?P<minor>\d{1,3}))?)(?P<ext>\." + ext + ")"
+        pattern = r"(?P<name>.+_v)(?P<ver>(?P<major>\d{1,3})([\._](?P<minor>\d{1,3}))?)(?P<ext>\." + ext + ")$"
     else:
         catalogList = list(filter(lambda x: os.path.isdir(os.path.join(catalog, x)), os.listdir(catalog)))
         pattern = r"(?P<name>(^|.+_)v)(?P<ver>\d{1,3})$"

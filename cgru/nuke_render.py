@@ -10,7 +10,8 @@ import _nuke
 _nuke.setEnvironmentVariables()
 
 cgru_nuke_render = os.path.join(os.environ['CGRU_LOCATION'], "software_setup", "bin", "NUKE.cmd")
-mainCommand = [cgru_nuke_render] + sys.argv[1:]
+mainCommand = [cgru_nuke_render] + ['"' + arg + '"' for arg in sys.argv[1:]]
 mainCommand = " ".join(mainCommand)
+# print("MAIN COMMAND IS ====", mainCommand)
 
 os.system(mainCommand)

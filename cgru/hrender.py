@@ -3,7 +3,7 @@ import sys
 import json
 
 sys.path.append(os.path.join(os.environ['CGPIPELINE'], "wrapper"))
-sys.path.append(os.path.join(os.environ['CGPIPELINE'], "_lib"))
+sys.path.append(os.path.join(os.environ['CGPIPELINE']))
 
 import houdini
 
@@ -45,5 +45,5 @@ mainCommandArgs = mainCommandArgs[:-2] + ['"{}"'.format(x) for x in mainCommandA
 cgru_hrender = os.path.join(os.environ['CGRU_LOCATION'], "software_setup", "bin", "hrender_af.cmd")
 mainCommandList = [cgru_hrender] + mainCommandArgs
 mainCommand = " ".join(mainCommandList)
-# print(mainCommand)
+# print("AF HOU COMMAND IS =", mainCommand)
 os.system(mainCommand)

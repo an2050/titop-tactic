@@ -30,14 +30,6 @@ def getNukeLocation():
 def setEnvironmentVariables(nukeLocationExe=None):
     cgHomePath = configUtils.cgHomePath
 
-    # nukeLocation = "C:\\Program Files\\Nuke10.5v5"
-    # nukeExe = "Nuke10.5.exe"
-    # nukeLocation = "C:\\Program Files\\Nuke11.3v5"
-    # nukeExe = "Nuke11.3.exe"
-    # nukeLocation = "C:\\Program Files\\Nuke12.0v5"
-    # nukeExe = "Nuke12.0.exe"
-
-    # os.environ['NUKE_EXE'] = os.path.join(nukeLocation, nukeExe)
     if nukeLocationExe is None:
         nukeLocation, nukeExe = getNukeLocation()
         nukeLocationExe = "/".join([nukeLocation, nukeExe])
@@ -45,10 +37,19 @@ def setEnvironmentVariables(nukeLocationExe=None):
     os.environ['NUKE_EXE'] = nukeLocationExe
     os.environ["NUKE_PATH"] = '/'.join([cgHomePath, 'Nuke'])
     # ======== CGRU SETUP ========
-    os.environ["PYTHONPATH"] = '/'.join([cgHomePath, 'cgru.2.3.1/afanasy/python;e:/pipeline/cgru.2.3.1/lib/python;e:/pipeline/cgru.2.3.1/plugins/nuke'])
-    os.environ["CGRU_LOCATION"] = '/'.join([cgHomePath, 'cgru.2.3.1'])
-    os.environ["NUKE_CGRU_PATH"] = '/'.join([cgHomePath, 'cgru.2.3.1/plugins/nuke'])
+    if os.environ.get('CGRU_LOCATION') is None:
+        os.environ["CGRU_LOCATION"] = '/'.join([cgHomePath, 'cgru.2.3.1'])
 
+    ptyhonAfPaths = ['afanasy/python', 'lib/python', 'plugins/nuke']
+    os.environ["PYTHONPATH"] = ";".join(["/".join([os.environ.get('CGRU_LOCATION'), path]) for path in ptyhonAfPaths])
+    os.environ["NUKE_CGRU_PATH"] = '/'.join([os.environ.get('CGRU_LOCATION'), 'plugins/nuke'])
+    # print("============================================")
+    # print("NUKE EXE ", os.environ['NUKE_EXE'])
+    # print("NUKE PATH", os.environ["NUKE_PATH"])
+    # print("PYTHONPATH", os.environ["PYTHONPATH"])
+    # print("CGRU_LOCATION", os.environ["CGRU_LOCATION"])
+    # print("NUKE_CGRU_PATH", os.environ["NUKE_CGRU_PATH"])
+    # print("============================================")
 
 def getNKFile(keyPrjData, taskData, extraJobData, nukeLocation):
 
