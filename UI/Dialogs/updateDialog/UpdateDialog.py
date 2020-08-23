@@ -50,6 +50,9 @@ class UpdateDialog(QDialog):
         self.lay_main.addLayout(self.lay_btns)
 
     def update(self):
+        storage = configUtils.serverStorage
+        run(['net', 'use', '"' + storage + '"', '/user:Andrey', ''])
+
         serverPipelinePath = configUtils.serverPipelinePath  # storage/pipeline
         lcPipeline = os.path.abspath(configUtils.rootPath + "/..")  # local/pipeline
 
