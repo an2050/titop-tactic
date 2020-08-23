@@ -56,12 +56,12 @@ class UpdateDialog(QDialog):
         srvNukeModule = os.path.abspath(os.path.join(serverPipelinePath, 'nuke'))
         srvhoudiniModule = os.path.abspath(os.path.join(serverPipelinePath, 'houdini'))
         srvPythonModule = os.path.abspath(os.path.join(serverPipelinePath, 'bin', 'python'))
-        srvCGRUModule = os.path.abspath(os.path.join(serverPipelinePath, 'cgru*'))
+        srvCGRUModule = os.path.abspath(os.path.join(serverPipelinePath, 'cgru.2.3.x'))
 
         lcNukeModule = os.path.abspath(os.path.join(lcPipeline, 'nuke'))
         lcHouidniModule = os.path.abspath(os.path.join(lcPipeline, 'houdini'))
         lcPythonModule = os.path.abspath(os.path.join(lcPipeline, 'bin', 'python'))
-        lcCGRUModule = os.path.abspath(os.path.join(lcPipelinePath, 'cgru*'))
+        lcCGRUModule = os.path.abspath(os.path.join('C:/', 'cgru.2.3.x'))
 
         if self.mainUpdateCheckBox.isChecked():
             run(['robocopy', serverPipelinePath, lcPipeline, '/MIR', '/XD', srvNukeModule, srvhoudiniModule, srvPythonModule, srvCGRUModule, '.git', '__pycache__',
