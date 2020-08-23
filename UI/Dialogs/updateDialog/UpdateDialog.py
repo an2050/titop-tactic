@@ -40,7 +40,7 @@ class UpdateDialog(QDialog):
         self.lay_groupBox.addLayout(self.lay_pythonModuleUpdate)
 
 # ====================== BUTTONS ===============================
-        self.btnUdate = QPushButton("Udate")
+        self.btnUdate = QPushButton("Update")
         self.btnCancel = QPushButton("Cancel")
         self.lay_btns = wdg_utils.getHorizontalBlockLayout(self.btnUdate, self.btnCancel)
         self.btnUdate.clicked.connect(self.update)
@@ -49,9 +49,28 @@ class UpdateDialog(QDialog):
         self.lay_main.addWidget(self.groupBox)
         self.lay_main.addLayout(self.lay_btns)
 
+    # def runUpdate(self):
+    #     import threading
+
+    #     th0 = threading.Thread(name='titop update', targe=self.update)
+    #     th0.start()
+    #     th0.join()
+        # self.accept()
+
     def update(self):
-        storage = configUtils.serverStorage
-        run(['net', 'use', '"' + storage + '"', '/user:Andrey', ''])
+        from _lib.tactic_lib import tacticDataProcess
+
+        storage = os.path.abspath(configUtils.serverStorage)
+        checkAccess = os.system(f'pushd {storage}')
+        if checkAccess == 1:
+            print("=> Getting storage acces...")
+            user = tacticDataProcess.getTicketData().get('login')
+            password = ""
+            connection = run(['net', 'use', storage, f'/user:{user}', f"{password}"])  # get credantial for storage
+            if connection.returncode != 0:
+                print("=> Storage access denied.")
+                return
+        print("=> Sotrage available")
 
         serverPipelinePath = configUtils.serverPipelinePath  # storage/pipeline
         lcPipeline = os.path.abspath(configUtils.rootPath + "/..")  # local/pipeline

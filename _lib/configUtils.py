@@ -5,7 +5,7 @@ import json
 firstFrame = 1001
 
 serverStorage = r"//192.168.1.11/Storage"
-serverPipelinePath = "/".join([serverStorage, r"/Storage/pipeline"])
+serverPipelinePath = "/".join([serverStorage, r"/pipeline"])
 configFilesPath = serverPipelinePath + "/bin/config"
 tacticAssetsPath = r"//192.168.1.102"
 
