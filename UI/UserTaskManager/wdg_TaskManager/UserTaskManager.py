@@ -121,6 +121,9 @@ class UserTaskWidget(QWidget):
     def getActiveProject(self):
         return self.userServerCore.activeProject.get('code')
 
+    def getPipelineData(self):
+        return self.userServerCore.pipelineData
+
     def setUserPosition(self):
         userPosition = self.userServerCore.userData[0].get('user_position')
         self.userPosition = userPosition if userPosition else 'no position'
@@ -149,6 +152,7 @@ class UserTaskWidget(QWidget):
     def treeItemChanged(self, current, previous):
         if current is None:
             return None
+
         elementData = tacticDataProcess.getTaskElementBySearchField(self.userServerCore.taskData, "__search_key__", current.data(0, Qt.UserRole))
         # elementData = tacticDataProcess.getTaskElementBySearchKey(self.userServerCore.taskData, current.data(0, Qt.UserRole))
         description_lable = tacticDataProcess.filterElementsData([elementData], fields=["description"])

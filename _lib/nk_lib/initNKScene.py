@@ -7,6 +7,7 @@ import re
 
 sys.path = list(set(sys.path + [os.environ.get('CGPIPELINE')]))
 from _lib import configUtils, pathUtils, sequenceUtils, keyDataProjectUtils
+from _lib.ffmpeg_lib import ffprobeUtils
 
 nukeConfigFile = configUtils.nukeConfigFile
 nkConfig = configUtils.loadConfigData(nukeConfigFile)
@@ -53,7 +54,7 @@ def setupFromMasterScirpt(keyPrjData, extraJobData, nkFile, masterScriptPath):
     prmReadNode = setupPrmReadNode(keyPrjData)
     setupDliesReadNode(dliesWriteNode, prmReadNode)
 
-    setFrameRange(extraJobData.get('frames'), root)
+    setFrameRange(extraJobData.get('frames'), root, prmReadNode['file'].value())
     saveInitNkScript(nkFile)
 
 
@@ -216,10 +217,20 @@ def setScriptFormat(keyPrjData, nkConfig, root):
     root['format'].setValue(prjFormat)
 
 
-def setFrameRange(frames, root):
-    framesCount = frames if frames else "100"
+def setFrameRange(frames, root, prm):
+    framesCount = frames if frames else getFramesFromPrm(prm)
     root['first_frame'].setValue(firstFrame)
     root['last_frame'].setValue(firstFrame + int(framesCount) - 1)
+
+
+def getFramesFromPrm(prm):
+    fps = nkConfig.get('FPS')
+    if prm == 'file not specified':
+        return "100"
+    print("PRM IS ", prm)
+    duration = ffprobeUtils.getDuration(prm)
+    frames = round(duration * int(fps))
+    return frames
 
 
 def initMasterScript(masterScriptPath, keyPrjData, extraJobData):

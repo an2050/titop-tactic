@@ -4,7 +4,7 @@ from subprocess import Popen, PIPE
 
 from _lib import pathUtils, configUtils, sequenceUtils, exceptionUtils
 from UI.Dialogs import simpleDialogs
-from . import projectUtils
+from UI.UserTaskManager.utils import projectUtils
 
 
 def raiseMessage(text):

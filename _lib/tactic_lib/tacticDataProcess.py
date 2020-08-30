@@ -105,21 +105,17 @@ def filterElementsData(data, filters=[], fields=False):
 
 
 def getStatusColor(pipelineData, prj, task, status):
-    codes = ["{prj}/{task}".format(prj=prj, task=task),
-             "{prj}/{task}".format(prj="vfx", task=task),
-             "{prj}/{task}".format(prj="vfx", task="comp")]
+    code = f'{prj}/{task}'
+    try:
+        pipeline = getTaskElementBySearchField(pipelineData, 'code', code).get('pipeline')
+    except AttributeError as err:
+        print(err)
+        return
 
-    for code in codes:
-        data = filterElementsData(pipelineData, [("code", code)], ['pipeline'])
-        if len(data) > 0:
-            root = ET.fromstring(data[0]['pipeline'])
-
-            statusData = [d.attrib for d in root if d.attrib.get('name') == status]
-
-            if statusData:
-                color = statusData[0].get('color')
-                if color is not None:
-                    return color
+    root = ET.fromstring(pipeline)
+    for child in root:
+        if status == child.attrib.get('name'):
+            return child.attrib.get('color')
 
 
 def getNotesElement(elementSKey, taskData, notesData):

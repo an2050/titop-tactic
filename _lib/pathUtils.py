@@ -209,3 +209,21 @@ def getVersioinFile(path, isFile=False, ext=None, version=None):
         return [resultFile, collection]
 
 
+def getPRM_filePath(keyPrjData):
+    path = getPRM_Path(keyPrjData)
+
+    try:
+        catalogList = os.listdir(path)
+    except FileNotFoundError:
+        print("=> PRM Error: Folder does not exists! : {}".format(path))
+        return
+
+    shotName = keyPrjData.get('shot')
+    prmList = ["/".join([path, file]) for file in catalogList if file.lower().find(shotName.lower()) >= 0]
+
+    if len(prmList) == 0:
+        print("=> PRM Error: prm not found for shot {}!".format(shotName))
+        return
+
+    prm = prmList.pop()
+    return prm

@@ -45,12 +45,21 @@ class TreeTaskList(QTreeWidget):
         self.setSortingEnabled(True)
         self.setAlternatingRowColors(1)
 
+        self.setContextMenu()
         # ======================= CONNECTS ===============================
         self.setContextMenuPolicy(Qt.CustomContextMenu)
         self.customContextMenuRequested.connect(self.callContextMenu)
 
         # ======================= UTILS ===============================
         self.itemUtils = itemUtils.ItemUtils(self)
+
+    def setContextMenu(self):
+        self.menu = QMenu(parent=self)
+        self.menu.addAction('expand All', self.expandAllTree)
+        self.menu.addAction('collapse All', self.collapseAllTree)
+
+    def callContextMenu(self, pos):
+        self.menu.exec_(QCursor.pos())
 
     # def completeTree(self, data, filterItems=False):
     def completeTree(self, data):
@@ -285,12 +294,3 @@ class TreeTaskList(QTreeWidget):
 
         if item is not None:
             self.setCurrentItem(item)
-
-    def callContextMenu(self, pos):
-        menu = QMenu(parent=self)
-        # menu.addAction("run", self.runSoft)
-        menu.addAction('expand All', self.expandAllTree)
-        menu.addAction('collapse All', self.collapseAllTree)
-        menu.exec_(QCursor.pos())
-# ===========================================
-

@@ -89,7 +89,9 @@ class activeButtonsTM():
         inputData['extraJobData'] = extraJobData
         inputData = json.dumps(inputData).encode()
 
-        soft = '_nuke' if taskData.get("task") == tctProcessElements['comp'] else 'houdini'
+        nukeTasks = [tctProcessElements['comp'], tctProcessElements['roto']]
+        soft = '_nuke' if taskData.get("task") in nukeTasks else 'houdini'
+
         runArgs = [configUtils.py2exe, configUtils.starterPath] + [soft]
         if self.autoInProgressStatus(selectedItem):
             subprocess.run(runArgs, input=inputData)

@@ -1,10 +1,11 @@
+import os
 from PySide2.QtWidgets import QMenu
 from PySide2.QtCore import Qt
 from PySide2.QtGui import QCursor
 
 from .treeTaskList import TreeTaskList
 from _lib.tactic_lib import tacticPostUtils, tacticDataProcess
-from _lib import configUtils
+from _lib import configUtils, pathUtils
 
 
 class TreeTaskList_coordinator(TreeTaskList):
@@ -14,8 +15,40 @@ class TreeTaskList_coordinator(TreeTaskList):
         self.setColumnCount(3)
         self.setColumnHidden(2, False)
 
+        self.appendCoordinatorConntectMenu()
 
-class TreeTaskList_supervisor(TreeTaskList):
+    def appendCoordinatorConntectMenu(self):
+        self.menu.addAction('Update Frames', self.updateFramesCount)
+
+    def callContextMenu(self, pos):
+        self.menu.exec_(QCursor.pos())
+
+    def updateFramesCount(self):
+        from _lib.ffmpeg_lib import ffprobeUtils
+        from UI.UserTaskManager.utils import projectUtils
+
+        nkConifg = configUtils.nukeConfigFile
+
+        fps = configUtils.loadConfigData(nkConifg).get('FPS')
+        project = self.taskManagerWdg.getActiveProject()
+        items = self.itemUtils.getSelected_shotItems()
+
+        server = self.taskManagerWdg.userServerCore.server
+        server.start()
+        for item in items:
+            keyPrjData = projectUtils.getKeyPrjData(project, item)
+
+            prm = pathUtils.getPRM_filePath(keyPrjData)
+            duration = ffprobeUtils.getDuration(prm) if prm else 0
+            frames = round(duration * int(fps))
+            skey = item.data(0, Qt.UserRole)
+            tacticPostUtils.updateSobject(server, skey, {"frames_count": frames})
+
+            print(f"Shot {keyPrjData.get('shot')} duration is '{frames}' frames")
+        server.finish()
+
+
+class TreeTaskList_supervisor(TreeTaskList_coordinator):
 
     def __init__(self, parent):
         super(TreeTaskList_supervisor, self).__init__(parent)
@@ -23,20 +56,19 @@ class TreeTaskList_supervisor(TreeTaskList):
         self.setColumnCount(3)
         self.setColumnHidden(2, False)
 
+        self.appendSupervisorConntectMenu()
+
+    def appendSupervisorConntectMenu(self):
+        self.processMenu = QMenu("Processes", self.menu)
+        self.proceesAddSubMenu = QMenu("Add", self.processMenu)
+        self.processMenu.addMenu(self.proceesAddSubMenu)
+        self.processMenu.addAction("Remove", self.removeProcess)
+        self.menu.addMenu(self.processMenu)
+
     def callContextMenu(self, pos):
-        menu = QMenu(parent=self)
-        menu.addAction('expand All', self.expandAllTree)
-        menu.addAction('collapse All', self.collapseAllTree)
-        menu.addSeparator()
-
-        processMenu = QMenu("Processes", menu)
-        proceesAddSubMenu = QMenu("Add", processMenu)
-        processMenu.addMenu(proceesAddSubMenu)
-        self.createProcessAddMenu(proceesAddSubMenu)
-        processMenu.addAction("Remove", self.removeProcess)
-
-        menu.addMenu(processMenu)
-        menu.exec_(QCursor.pos())
+        self.proceesAddSubMenu.clear()
+        self.createProcessAddMenu(self.proceesAddSubMenu)
+        self.menu.exec_(QCursor.pos())
 
     def createProcessAddMenu(self, processMenu):
         items = self.itemUtils.getSelected_shotItems()
@@ -98,4 +130,4 @@ class TreeTaskList_supervisor(TreeTaskList):
             if sKey.find("task") < 0:
                 continue
             print(sKey)
-            tacticPostUtils.deleteNote(server, sKey, True)
+            tacticPostUtils.deleteSObject(server, sKey, True)
