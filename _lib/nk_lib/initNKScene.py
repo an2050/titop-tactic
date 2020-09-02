@@ -9,15 +9,14 @@ sys.path = list(set(sys.path + [os.environ.get('CGPIPELINE')]))
 from _lib import configUtils, pathUtils, sequenceUtils, keyDataProjectUtils
 from _lib.ffmpeg_lib import ffprobeUtils
 
-nukeConfigFile = configUtils.nukeConfigFile
-nkConfig = configUtils.loadConfigData(nukeConfigFile)
+mainNkData = dict()
 
 firstFrame = configUtils.firstFrame
 padding = pathUtils.padding
+baseVer = "0".zfill(padding)
 
 seqPadding = 0
 extension = ""
-baseVer = "0".zfill(padding)
 
 srcReadName = "SRC"
 hresWriteName = "HiRes_OUT"
@@ -28,17 +27,19 @@ prmReadName = "PRM"
 
 
 def getInit(args):
+    global mainNkData
+    mainNkData = args.get('mainNkData')
     nkFile = args.get('nkFile')
     keyPrjData = args.get('keyPrjData')
     extraJobData = args.get('extraJobData')
-    prjFolder = keyDataProjectUtils.getProjectFolder(keyPrjData)
 
+    prjFolder = keyDataProjectUtils.getProjectFolder(keyPrjData)
     masterScriptPath = prjFolder + "/config.nk"
 
     if os.path.exists(masterScriptPath):
         setupFromMasterScirpt(keyPrjData, extraJobData, nkFile, masterScriptPath)
     else:
-        if initMasterScript(masterScriptPath, keyPrjData, extraJobData):
+        if initMasterScript(masterScriptPath, keyPrjData, extraJobData, ):
             setupFromMasterScirpt(keyPrjData, extraJobData, nkFile, masterScriptPath)
 
 
@@ -61,7 +62,6 @@ def setupFromMasterScirpt(keyPrjData, extraJobData, nkFile, masterScriptPath):
 
 def setupMetadataNode(keyPrjData):
     metaNode = nuke.toNode('project_metadata')
-    # metaNode.knob('projectName').setValue(keyPrjData.get('project'))
     metaNode.knob('shotName').setValue(keyPrjData.get('shot'))
     return metaNode
 
@@ -113,11 +113,13 @@ def setupSrcReadNode(keyPrjData):
 def setupHresWriteNode(keyPrjData, srcReadName):
     hresPathTemplate = pathUtils.hiresPath_templ
     hresPath = pathUtils.handleTemplate(keyPrjData, hresPathTemplate, root_dependence=True)
-    outHiResData = nkConfig.get('OUT_HIRES')
+    hrsOrigName = mainNkData.get('HIRES_ORIG_NAME')
 
-    bodyName = keyPrjData.get('shot') + "_v" + "1".zfill(padding)
+    bodyNameTamlate = mainNkData.get('HIRES_TEMPLATE')
+    outPadding = int(mainNkData.get('PADDING'))
+    bodyName = bodyNameTamlate.format(shotName=keyPrjData.get('shot'), ver="1".zfill(outPadding))
 
-    if not outHiResData.get('ORIGNAME'):
+    if hrsOrigName == 'false':
         global seqPadding, extension
         fileName = bodyName + "." + "%0" + str(seqPadding) + "d" + extension
         hresPath = "/".join([hresPath, bodyName, fileName])
@@ -215,12 +217,12 @@ def setupPrmReadNode(keyPrjData):
     return readNode
 
 
-def setScriptFormat(keyPrjData, nkConfig, root):
+def setScriptFormat(keyPrjData, root):
     prjName = keyPrjData.get('project')
 
-    prjFormat = nuke.addFormat("{} {}".format(nkConfig.get('RESX'), nkConfig.get('RESY')))
+    prjFormat = nuke.addFormat("{} {}".format(mainNkData.get('RESX'), mainNkData.get('RESY')))
     prjFormat.setName("PRJ_{}".format(prjName))
-    prjFormat.setPixelAspect(int(nkConfig.get("PIXEL_APECT")))
+    prjFormat.setPixelAspect(int(mainNkData.get("PIXEL_APECT")))
 
     root['format'].setValue(prjFormat)
 
@@ -259,8 +261,8 @@ def initMasterScript(masterScriptPath, keyPrjData, extraJobData):
         return writeNode
 
     root = nuke.Root()
-    setScriptFormat(keyPrjData, nkConfig, root)
-    root['fps'].setValue(int(nkConfig.get('FPS')))
+    setScriptFormat(keyPrjData, root)
+    root['fps'].setValue(int(mainNkData.get('FPS')))
 
     # - metadata Node
     metaNode = nuke.createNode('project_metadata')

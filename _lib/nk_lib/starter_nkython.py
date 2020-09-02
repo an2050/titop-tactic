@@ -3,8 +3,8 @@ from subprocess import Popen, PIPE
 import json
 
 
-def initNKScene(nkfile, keyPrjData, extraJobData, nukeLocation):
-    data = {"nkFile": nkfile, "keyPrjData": keyPrjData, "extraJobData": extraJobData}
+def initNKScene(nkfile, keyPrjData, extraJobData, nukeLocation, mainNkData):
+    data = {"nkFile": nkfile, "keyPrjData": keyPrjData, "extraJobData": extraJobData, "mainNkData": mainNkData}
     data = json.dumps(data).encode()
 
     initScenePy = "/".join([os.path.dirname(__file__), "initNKScene.py"])
