@@ -46,6 +46,7 @@ def setupFromMasterScirpt(keyPrjData, extraJobData, nkFile, masterScriptPath):
     nuke.scriptOpen(masterScriptPath)
     root = nuke.Root()
 
+    metaNode = setupMetadataNode(keyPrjData)
     srcReadNode = setupSrcReadNode(keyPrjData)
     setupHresWriteNode(keyPrjData, srcReadNode)
     setupHresReadNode(srcReadNode)
@@ -54,8 +55,15 @@ def setupFromMasterScirpt(keyPrjData, extraJobData, nkFile, masterScriptPath):
     prmReadNode = setupPrmReadNode(keyPrjData)
     setupDliesReadNode(dliesWriteNode, prmReadNode)
 
-    setFrameRange(extraJobData.get('frames'), root, prmReadNode['file'].value())
+    setFrameRange(extraJobData.get('frames'), root, prmReadNode['file'].value(), metaNode)
     saveInitNkScript(nkFile)
+
+
+def setupMetadataNode(keyPrjData):
+    metaNode = nuke.toNode('project_metadata')
+    # metaNode.knob('projectName').setValue(keyPrjData.get('project'))
+    metaNode.knob('shotName').setValue(keyPrjData.get('shot'))
+    return metaNode
 
 
 def setupSrcReadNode(keyPrjData):
@@ -217,10 +225,11 @@ def setScriptFormat(keyPrjData, nkConfig, root):
     root['format'].setValue(prjFormat)
 
 
-def setFrameRange(frames, root, prm):
+def setFrameRange(frames, root, prm, metaNode):
     framesCount = frames if frames else getFramesFromPrm(prm)
     root['first_frame'].setValue(firstFrame)
     root['last_frame'].setValue(firstFrame + int(framesCount) - 1)
+    metaNode.knob('duration').setValue(str(framesCount))
 
 
 def getFramesFromPrm(prm):
@@ -252,6 +261,11 @@ def initMasterScript(masterScriptPath, keyPrjData, extraJobData):
     root = nuke.Root()
     setScriptFormat(keyPrjData, nkConfig, root)
     root['fps'].setValue(int(nkConfig.get('FPS')))
+
+    # - metadata Node
+    metaNode = nuke.createNode('project_metadata')
+    metaNode.setName('project_metadata')
+    metaNode.knob('projectName').setValue(keyPrjData.get('project'))
 
     # - source readNode
     srcReadNode = createReadNode(srcReadName, 'file not specified')
@@ -290,7 +304,7 @@ def saveInitNkScript(nkFile):
     if not os.path.exists(folder):
         os.makedirs(folder)
 
-    baseNkFile = re.sub(r'(.*)(_v\d{1,3})(\..*$)', '\\1_v{}\\3'.format(baseVer), nkFile)
+    baseNkFile = re.sub(r'(.*)(_v\d{1,5})(\..*$)', '\\1_v{}\\3'.format(baseVer), nkFile)
     nuke.scriptSave(baseNkFile)
     nuke.scriptSave(nkFile)
 

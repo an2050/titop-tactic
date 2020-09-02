@@ -28,7 +28,7 @@ templateConfigFile = os.path.join(configFilesPath, "config_template.json")
 # projectStructureConfigFile = os.path.join(rootPath, "config", "projectStructure.json")
 # templateConfigFile = os.path.join(rootPath, "config", "config_template.json")
 
-activeProjectsFile = os.path.join(rootPath, "config", "activeProjects.json")
+# activeProjectsFile = os.path.join(rootPath, "config", "activeProjects.json")
 
 rvPlayerPath = 'C:/Program Files/Shotgun/RV-7.8.0'
 ffmpegPath = "/".join([rootPath, 'ffmpeg'])

@@ -99,7 +99,7 @@ if "starter.py" in sys.argv[0]:
 
         nukeCommand = [nukeLocationExe, "--nukex", nkfile]
         print("=> Starting NUKE process: ", nukeCommand)
-        subprocess.Popen(nukeCommand)
+        # subprocess.Popen(nukeCommand)
     else:
         print('===> Nuke location not found!')
 
