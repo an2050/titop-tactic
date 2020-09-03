@@ -87,7 +87,7 @@ class UpdateDialog(QDialog):
 
         if self.mainUpdateCheckBox.isChecked():
             run(['robocopy', serverPipelinePath, lcPipeline, '/MIR', '/XD', srvNukeModule, srvhoudiniModule, srvPythonModule, srvCGRUModule, '.git', '__pycache__',
-                                                             '/XF', '*.pyc', '*SUBLIME*', '/XA:SH', '/MT', '/Z'])
+                                                             '/XF', '*.pyc', '*SUBLIME*', '*json', '/XA:SH', '/MT', '/Z'])
 
         if self.nukeModuleUpdateCheckBox.isChecked():
             run(['robocopy', srvNukeModule, lcNukeModule, '/MIR', '/XD', '__pycache__', '/XF', '*.pyc', '/MT', '/Z'])

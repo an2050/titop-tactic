@@ -62,6 +62,7 @@ def setupFromMasterScirpt(keyPrjData, extraJobData, nkFile, masterScriptPath):
 
 def setupMetadataNode(keyPrjData):
     metaNode = nuke.toNode('project_metadata')
+    metaNode.knob('episodName').setValue(keyPrjData.get('episod'))
     metaNode.knob('shotName').setValue(keyPrjData.get('shot'))
     return metaNode
 
