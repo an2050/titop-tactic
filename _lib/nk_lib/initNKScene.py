@@ -64,6 +64,7 @@ def setupMetadataNode(keyPrjData):
     metaNode = nuke.toNode('project_metadata')
     metaNode.knob('episodName').setValue(keyPrjData.get('episod'))
     metaNode.knob('shotName').setValue(keyPrjData.get('shot'))
+    metaNode.knob('padding').setValue(mainNkData.get('PADDING'))
     return metaNode
 
 

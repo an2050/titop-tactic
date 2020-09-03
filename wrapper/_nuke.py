@@ -33,11 +33,11 @@ def getLocalNukeLocation(ver):
 def getNukeLocation(ver, afRender=False):
     from platform import system
     nukeDir = ""
-    if system is 'Windows':
+    if system() is 'Windows':
         nukeDir = "/".join(['C:', 'Program Files', r'Nuke{ver}'])
-    elif system is 'Linux':
+    elif system() is 'Linux':
         nukeDir = ''
-    elif system == 'Darwin':
+    elif system() == 'Darwin':
         nukeDir = ''
 
     nukeLocation = nukeDir.format(ver=ver)

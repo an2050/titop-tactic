@@ -3,7 +3,7 @@ import re
 from _lib import keyDataProjectUtils, exceptionUtils
 
 
-padding = 4
+padding = 3
 version = "1".zfill(padding)
 
 
@@ -157,7 +157,8 @@ def getVersioinFile(path, isFile=False, ext=None, version=None):
         pattern = r"(?P<name>.+_v)(?P<ver>(?P<major>\d{1,5})([\._](?P<minor>\d{1,5}))?)(?P<ext>\." + ext + ")$"
     else:
         catalogList = list(filter(lambda x: os.path.isdir(os.path.join(catalog, x)), os.listdir(catalog)))
-        pattern = r"(?P<name>(^|.+_)v)(?P<ver>\d{1,5})$"
+        # pattern = r"(?P<name>(^|.+_)v)(?P<ver>\d{1,5})$"
+        pattern = r"(?P<name>(^|.+_)[V,v])(?P<ver>\d{1,6})(_\w*?)?$"
 
     # Filter files by pattern
     matchFiles = list(filter(lambda x: re.search(pattern, x, flags=re.IGNORECASE) is not None, catalogList))

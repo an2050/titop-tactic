@@ -19,17 +19,11 @@ starterPath = os.path.join(rootPath, "starter.py")
 starter_hythonPath = os.path.join(rootPath, "_lib", "hou_lib", "starter_hython.cmd")
 
 mainProjectConfigFile = os.path.join(configFilesPath, "config_main.json")
-# nukeConfigFile = os.path.join(configFilesPath, "config_nk.json")
 projectStructureConfigFile = os.path.join(configFilesPath, "projectStructure.json")
 templateConfigFile = os.path.join(configFilesPath, "config_template.json")
 
-# mainProjectConfigFile = os.path.join(rootPath, "config", "config_main.json")
-# nukeConfigFile = os.path.join(rootPath, "config", "config_nk.json")
-# projectStructureConfigFile = os.path.join(rootPath, "config", "projectStructure.json")
-# templateConfigFile = os.path.join(rootPath, "config", "config_template.json")
-
 configLocal = "/".join([rootPath, "config", "config_local.json"])
-activeProjectsFile = os.path.join(rootPath, "config", "activeProjects.json")
+activeProjectsFile = os.path.join(rootPath, "config", "activeProjects.json")  # use for Project Manager
 
 rvPlayerPath = 'C:/Program Files/Shotgun/RV-7.8.0'
 ffmpegPath = "/".join([rootPath, 'ffmpeg'])
