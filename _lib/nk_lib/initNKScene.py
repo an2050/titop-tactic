@@ -9,6 +9,8 @@ sys.path = list(set(sys.path + [os.environ.get('CGPIPELINE')]))
 from _lib import configUtils, pathUtils, sequenceUtils, keyDataProjectUtils
 from _lib.ffmpeg_lib import ffprobeUtils
 
+import nkUtils
+
 mainNkData = dict()
 
 firstFrame = configUtils.firstFrame
@@ -18,11 +20,17 @@ baseVer = "0".zfill(padding)
 seqPadding = 0
 extension = ""
 
+# Init script nodes
 srcReadName = "SRC"
+dnsWriteName = "DNS_OUT"
+dnsReadName = "DNS"
+
 hresWriteName = "HiRes_OUT"
 hresReadName = 'HiRes'
+
 dliesWriteName = "Daylies_OUT"
 dliesReadName = "Daylies"
+
 prmReadName = "PRM"
 
 
@@ -49,6 +57,8 @@ def setupFromMasterScirpt(keyPrjData, extraJobData, nkFile, masterScriptPath):
 
     metaNode = setupMetadataNode(keyPrjData)
     srcReadNode = setupSrcReadNode(keyPrjData)
+    setupDnsWriteNode(keyPrjData)
+    setupDnsReadNode()
     setupHresWriteNode(keyPrjData, srcReadNode)
     setupHresReadNode(srcReadNode)
     dliesWriteNode = setupDliesWriteNode(keyPrjData)
@@ -65,6 +75,7 @@ def setupMetadataNode(keyPrjData):
     metaNode.knob('episodName').setValue(keyPrjData.get('episod'))
     metaNode.knob('shotName').setValue(keyPrjData.get('shot'))
     metaNode.knob('padding').setValue(mainNkData.get('PADDING'))
+    metaNode.knob('ver').setValue("1".zfill(int(mainNkData.get('PADDING'))))
     return metaNode
 
 
@@ -112,6 +123,29 @@ def setupSrcReadNode(keyPrjData):
     return readNode
 
 
+def setupDnsWriteNode(keyPrjData):
+    global seqPadding, extension
+    dnsPath = 'footage/dns/v{ver}/{shotName}_dns_v{ver}.%0{padding}d{ext}'.format(ver='[value project_metadata.ver]',
+                                                                                          shotName=keyPrjData.get('shot'),
+                                                                                          padding=seqPadding,
+                                                                                          ext=extension)
+    dnsWriteNode = nuke.toNode(dnsWriteName)
+    dnsWriteNode['file'].setValue(dnsPath)
+    dnsWriteNode['frame'].setValue('[value SRC.first] + (frame - input.first_frame)')
+
+
+def setupDnsReadNode():
+    first = '[value {}.first]'.format(srcReadName)
+    last = '[value {}.last]'.format(srcReadName)
+    file = '[value {}.file]'.format(dnsWriteName)
+
+    dnsReadNodeParms = [('file', file), ('frame_mode', 1), ('frame', str(firstFrame))]
+    dnsReadNodeExpr = [('first', first), ('last', last), ('origfirst', first), ('origlast', last)]
+    dnsReadNode = nuke.toNode(dnsReadName)
+    dnsReadNode = nkUtils.setupNodeParms(dnsReadNode, dnsReadNodeParms, dnsReadNodeExpr)
+    return dnsReadNode
+
+
 def setupHresWriteNode(keyPrjData, srcReadName):
     hresPathTemplate = pathUtils.hiresPath_templ
     hresPath = pathUtils.handleTemplate(keyPrjData, hresPathTemplate, root_dependence=True)
@@ -131,23 +165,34 @@ def setupHresWriteNode(keyPrjData, srcReadName):
 
     hresWriteNode = nuke.toNode(hresWriteName)
     hresWriteNode['file'].setValue(hresPath)
-    hresWriteNode['frame_mode'].setValue(2)
-    try:
-        offset = srcReadName['first'].value() - int(srcReadName['frame'].value())
-        hresWriteNode['frame'].setValue(str(offset))
-    except ValueError as err:
-        print(err)
+    hresWriteNode['frame'].setValue('[value SRC.first] + (frame - input.first_frame)')
+    # hresWriteNode['frame_mode'].setValue(2)
+    # try:
+    #     offset = srcReadName['first'].value() - int(srcReadName['frame'].value())
+    #     hresWriteNode['frame'].setValue(str(offset))
+    # except ValueError as err:
+    #     print(err)
 
 
 def setupHresReadNode(srcReadNode):
+    first = '[value {}.first]'.format(srcReadName)
+    last = '[value {}.last]'.format(srcReadName)
+    file = '[value {}.file]'.format(hresWriteName)
+
+    hresReadNodeParms = [('file', file), ('frame_mode', 1), ('frame', str(firstFrame))]
+    hresReadNodeExpr = [('first', first), ('last', last), ('origfirst', first), ('origlast', last)]
     hresReadNode = nuke.toNode(hresReadName)
-    hresReadNode['frame_mode'].setValue(srcReadNode['frame_mode'].value())
-    hresReadNode['frame'].setValue(srcReadNode['frame'].value())
-    hresReadNode['first'].setValue(int(srcReadNode['first'].value()))
-    hresReadNode['last'].setValue(int(srcReadNode['last'].value()))
-    hresReadNode['origfirst'].setValue(int(srcReadNode['origfirst'].value()))
-    hresReadNode['origlast'].setValue(int(srcReadNode['origlast'].value()))
+    hresReadNode = nkUtils.setupNodeParms(hresReadNode, hresReadNodeParms, hresReadNodeExpr)
     return hresReadNode
+    # hresReadNode = nuke.toNode(hresReadName)
+
+    # hresReadNode['frame_mode'].setValue(srcReadNode['frame_mode'].value())
+    # hresReadNode['frame'].setValue(srcReadNode['frame'].value())
+    # hresReadNode['first'].setValue(int(srcReadNode['first'].value()))
+    # hresReadNode['last'].setValue(int(srcReadNode['last'].value()))
+    # hresReadNode['origfirst'].setValue(int(srcReadNode['origfirst'].value()))
+    # hresReadNode['origlast'].setValue(int(srcReadNode['origlast'].value()))
+    # return hresReadNode
 
 
 def setupDliesWriteNode(keyPrjData):
@@ -263,6 +308,7 @@ def initMasterScript(masterScriptPath, keyPrjData, extraJobData):
         return writeNode
 
     root = nuke.Root()
+    root.knob('project_directory').setValue('[python {nuke.script_directory()}]')
     setScriptFormat(keyPrjData, root)
     root['fps'].setValue(int(mainNkData.get('FPS')))
 
@@ -274,12 +320,23 @@ def initMasterScript(masterScriptPath, keyPrjData, extraJobData):
     # - source readNode
     srcReadNode = createReadNode(srcReadName, 'file not specified')
 
+    # - denoise writeNode
+    # afterRender = "import thread; rld = nuke.toNode('" + dnsReadName + "')['reload']; thread.start_new_thread(rld.execute, ())"
+    dnsWriteNodeParms = [('file', 'file not specified'), ('create_directories', 1)]  # , ('afterRender', afterRender)]
+    dnsWriteNode = createWriteNode(dnsWriteName, dnsWriteNodeParms)
+    setPosUnderTheNode(dnsWriteNode, srcReadNode, 500)
+    dnsWriteNode.setInput(0, srcReadNode)
+
+    # - denoise ReadNode
+    dnsReadNode = createReadNode(dnsReadName, "[python {nuke.toNode('%s')['file'].value()}]" % dnsWriteNode.name())
+    setPosUnderTheNode(dnsReadNode, dnsWriteNode)
+
     # - hires writeNode
-    afterRender = "import thread; rld = nuke.toNode('" + hresReadName + "')['reload']; thread.start_new_thread(rld.execute, ())"
-    hresWriteNodeParms = [('file', 'file not specified'), ('create_directories', 1), ('afterRender', afterRender)]
+    # afterRender = "import thread; rld = nuke.toNode('" + hresReadName + "')['reload']; thread.start_new_thread(rld.execute, ())"
+    hresWriteNodeParms = [('file', 'file not specified'), ('create_directories', 1)]  # , ('afterRender', afterRender)]
     hresWriteNode = createWriteNode(hresWriteName, hresWriteNodeParms)
-    setPosUnderTheNode(hresWriteNode, srcReadNode, 800)
-    hresWriteNode.setInput(0, srcReadNode)
+    setPosUnderTheNode(hresWriteNode, dnsReadNode, 800)
+    hresWriteNode.setInput(0, dnsReadNode)
 
     # - hires readNode
     hresReadNode = createReadNode(hresReadName, "[python {nuke.toNode('%s')['file'].value()}]" % hresWriteNode.name())
@@ -293,7 +350,7 @@ def initMasterScript(masterScriptPath, keyPrjData, extraJobData):
     dliesWriteNode.setInput(0, hresReadNode)
 
     # - daylies readNode
-    dliesReadNode = createReadNode(dliesReadName, "[python {nuke.toNode('%s')['file'].value()}]" % dliesWriteNode.name())
+    dliesReadNode = createReadNode(dliesReadName, "[value %s.file]" % dliesWriteName)
     setPosUnderTheNode(dliesReadNode, dliesWriteNode)
 
     # - prm readNode
