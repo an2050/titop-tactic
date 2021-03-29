@@ -70,11 +70,13 @@ def getNukeLocation(ver, afRender=False):
     return nukeLocation, nukeExe
 
 
-def setEnvironmentVariables(nukeLocationExe):
+def setEnvironmentVariables(nukeLocationExe, keyPrjData):
     cgHomePath = configUtils.cgHomePath
 
     os.environ['NUKE_EXE'] = nukeLocationExe
     os.environ["NUKE_PATH"] = '/'.join([cgHomePath, 'Nuke'])
+    if keyPrjData:
+        os.environ["PROJECT_ROOT"] = keyDataProjectUtils.getProjectFolder(keyPrjData)
     # ======== CGRU SETUP ========
     # if os.environ.get('CGRU_LOCATION') is None:
     #     os.environ["CGRU_LOCATION"] = '/'.join([cgHomePath, 'cgru.2.3.1'])
@@ -151,7 +153,7 @@ if "starter.py" in sys.argv[0]:
     nukeLocation, nukeExe = getNukeLocation(mainNkData.get('version'))
     nukeLocationExe = "/".join([nukeLocation, nukeExe])
 
-    setEnvironmentVariables(nukeLocationExe)
+    setEnvironmentVariables(nukeLocationExe, keyPrjData)
 
     nkfile = ""
     if keyPrjData and taskData:

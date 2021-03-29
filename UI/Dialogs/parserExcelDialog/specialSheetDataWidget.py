@@ -202,7 +202,7 @@ class SheetDataWidget(QWidget):
             column = self.sheet[coord].column
             value = self.sheet.cell(row, column).value
             if value:
-                data[field] = str(value)
+                data[field] = str(value).strip()
         return data
 
     def collectEpisodData(self, data, episodName, shotName):

@@ -44,6 +44,8 @@ def getInit(args):
     prjFolder = keyDataProjectUtils.getProjectFolder(keyPrjData)
     masterScriptPath = prjFolder + "/config.nk"
 
+
+
     if os.path.exists(masterScriptPath):
         setupFromMasterScirpt(keyPrjData, extraJobData, nkFile, masterScriptPath)
     else:
@@ -57,8 +59,8 @@ def setupFromMasterScirpt(keyPrjData, extraJobData, nkFile, masterScriptPath):
 
     metaNode = setupMetadataNode(keyPrjData)
     srcReadNode = setupSrcReadNode(keyPrjData)
-    setupDnsWriteNode(keyPrjData)
-    setupDnsReadNode()
+    dnsWriteNode = setupDnsWriteNode(keyPrjData)
+    setupDnsReadNode(dnsWriteNode)
     setupHresWriteNode(keyPrjData, srcReadNode)
     setupHresReadNode(srcReadNode)
     dliesWriteNode = setupDliesWriteNode(keyPrjData)
@@ -74,8 +76,8 @@ def setupMetadataNode(keyPrjData):
     metaNode = nuke.toNode('project_metadata')
     metaNode.knob('episodName').setValue(keyPrjData.get('episod'))
     metaNode.knob('shotName').setValue(keyPrjData.get('shot'))
-    metaNode.knob('padding').setValue(mainNkData.get('PADDING'))
-    metaNode.knob('ver').setValue("1".zfill(int(mainNkData.get('PADDING'))))
+    metaNode.knob('padding').setValue(mainNkData.get('VER_PADDING'))
+    metaNode.knob('ver').setValue("1".zfill(int(mainNkData.get('VER_PADDING'))))
     return metaNode
 
 
@@ -110,8 +112,19 @@ def setupSrcReadNode(keyPrjData):
     seq.pop(seqRepr)
 
     global seqPadding, extension
-    seqPadding = re.search(r'%0(\d{1,2})d', seqFile).group(1)
-    extension = os.path.splitext(seqFile)[1]
+    if mainNkData.get('SEQ_PADDING') == "FROM_SRC":
+        seqPadding = re.search(r'%0(\d{1,2})d', seqFile).group(1)
+    else:
+        seqPadding = int(mainNkData.get('SEQ_PADDING'))
+
+    if mainNkData.get('SEQ_EXTENSION') == "FROM_SRC":
+        extension = os.path.splitext(seqFile)[1]
+    else:
+        extension = mainNkData.get('SEQ_EXTENSION')
+
+    # global seqPadding, extension
+    # seqPadding = re.search(r'%0(\d{1,2})d', seqFile).group(1)
+    # extension = os.path.splitext(seqFile)[1]
 
     readNode = nuke.toNode(srcReadName)
     readNode = setReadNodeProperties(seqRepr, seqFile, readNode)
@@ -125,21 +138,26 @@ def setupSrcReadNode(keyPrjData):
 
 def setupDnsWriteNode(keyPrjData):
     global seqPadding, extension
-    dnsPath = 'footage/dns/v{ver}/{shotName}_dns_v{ver}.%0{padding}d{ext}'.format(ver='[value project_metadata.ver]',
-                                                                                          shotName=keyPrjData.get('shot'),
-                                                                                          padding=seqPadding,
-                                                                                          ext=extension)
+    # dnsPath = 'footage/dns/v{ver}/{shotName}_dns_v{ver}.%0{padding}d{ext}'.format(ver='[value project_metadata.ver]',
+    #                                                                                       shotName=keyPrjData.get('shot'),
+    #                                                                                       padding=seqPadding,
+    #                                                                                       ext=extension)
+    dnsPath = 'footage/dns/{shotName}_dns.%0{padding}d{ext}'.format(shotName=keyPrjData.get('shot'),
+                                                                    padding=seqPadding,
+                                                                    ext=extension)
     dnsWriteNode = nuke.toNode(dnsWriteName)
     dnsWriteNode['file'].setValue(dnsPath)
     dnsWriteNode['frame'].setValue('[value SRC.first] + (frame - input.first_frame)')
+    return dnsWriteNode
 
 
-def setupDnsReadNode():
+def setupDnsReadNode(dnsWriteNode):
     first = '[value {}.first]'.format(srcReadName)
     last = '[value {}.last]'.format(srcReadName)
-    file = '[value {}.file]'.format(dnsWriteName)
 
-    dnsReadNodeParms = [('file', file), ('frame_mode', 1), ('frame', str(firstFrame))]
+    # file = '[value {}.file]'.format(dnsWriteName)
+    # dnsReadNodeParms = [('file', file), ('frame_mode', 1), ('frame', str(firstFrame))]
+    dnsReadNodeParms = [('file', dnsWriteNode.knob('file').value()), ('frame_mode', 1), ('frame', str(firstFrame))]
     dnsReadNodeExpr = [('first', first), ('last', last), ('origfirst', first), ('origlast', last)]
     dnsReadNode = nuke.toNode(dnsReadName)
     dnsReadNode = nkUtils.setupNodeParms(dnsReadNode, dnsReadNodeParms, dnsReadNodeExpr)
@@ -152,8 +170,8 @@ def setupHresWriteNode(keyPrjData, srcReadName):
     hrsOrigName = mainNkData.get('HIRES_ORIG_NAME')
 
     bodyNameTamlate = mainNkData.get('HIRES_TEMPLATE')
-    outPadding = int(mainNkData.get('PADDING'))
-    bodyName = bodyNameTamlate.format(shotName=keyPrjData.get('shot'), ver="1".zfill(outPadding))
+    verPadding = int(mainNkData.get('VER_PADDING'))
+    bodyName = bodyNameTamlate.format(shotName=keyPrjData.get('shot'), ver="1".zfill(verPadding))
 
     if hrsOrigName == 'false':
         global seqPadding, extension
@@ -198,7 +216,8 @@ def setupHresReadNode(srcReadNode):
 def setupDliesWriteNode(keyPrjData):
     dliesPathTemplate = pathUtils.dailiesPath_templ
     dliesPath = pathUtils.handleTemplate(keyPrjData, dliesPathTemplate, root_dependence=True)
-    fileName = keyPrjData.get('shot') + "_v" + "1".zfill(padding) + ".mov"
+    verPadding = int(mainNkData.get('VER_PADDING'))
+    fileName = keyPrjData.get('shot') + "_v" + "1".zfill(verPadding) + ".mov"
 
     dliesPath = "/".join([dliesPath, fileName])
 
